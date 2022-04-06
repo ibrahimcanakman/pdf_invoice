@@ -9,13 +9,13 @@ import '../model/invoice.dart';
 import '../model/supplier.dart';
 import '../utils.dart';
 
-class PdfInvoiceApi {
-  static Future<File> generate(Invoice invoice) async {
+class PdfSayfaFormati {
+  static Future<File> generate(Invoice invoice, DateTime tarih) async {
     final pdf = Document();
 
     pdf.addPage(MultiPage(
       build: (context) => [
-        buildHeader(invoice),
+        buildHeader(invoice, tarih),
         SizedBox(height: 3 * PdfPageFormat.cm),
         buildTitle(invoice),
         buildInvoice(invoice),
@@ -28,7 +28,7 @@ class PdfInvoiceApi {
     return PdfApi.saveDocument(name: 'my_invoice.pdf', pdf: pdf);
   }
 
-  static Widget buildHeader(Invoice invoice) => Column(
+  static Widget buildHeader(Invoice invoice, DateTime tarih) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(height: 1 * PdfPageFormat.cm),
@@ -41,7 +41,7 @@ class PdfInvoiceApi {
                 width: 50,
                 child: BarcodeWidget(
                   barcode: Barcode.qrCode(),
-                  data: invoice.info.number,
+                  data: '1111',
                 ),
               ),
             ],
@@ -52,7 +52,7 @@ class PdfInvoiceApi {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               buildCustomerAddress(invoice.customer),
-              buildInvoiceInfo(invoice.info),
+              buildInvoiceInfo(invoice.info, tarih),
             ],
           ),
         ],
@@ -66,19 +66,19 @@ class PdfInvoiceApi {
         ],
       );
 
-  static Widget buildInvoiceInfo(InvoiceInfo info) {
-    final paymentTerms = '${info.dueDate.difference(info.date).inDays} days';
+  static Widget buildInvoiceInfo(InvoiceInfo info, DateTime tarih) {
+    //final paymentTerms = '${info.dueDate.difference(info.date).inDays} days';
     final titles = <String>[
       'Invoice Number:',
       'Invoice Date:',
-      'Payment Terms:',
-      'Due Date:'
+      //'Payment Terms:',
+      //'Due Date:'
     ];
     final data = <String>[
-      info.number,
-      Utils.formatDate(info.date),
-      paymentTerms,
-      Utils.formatDate(info.dueDate),
+      '${tarih.year}${tarih.month.toString().length == 1 ? '0${tarih.month}' : '${tarih.month}'}${tarih.day.toString().length == 1 ? '0${tarih.day}' : '${tarih.day}'}',
+      '${tarih.day}.${tarih.month}.${tarih.year}', //tarih yazılacak
+      //paymentTerms,
+      //Utils.formatDate(info.dueDate),
     ];
 
     return Column(
@@ -117,22 +117,22 @@ class PdfInvoiceApi {
   static Widget buildInvoice(Invoice invoice) {
     final headers = [
       'Description',
-      'Date',
+      //'Date',
       'Quantity',
       'Unit Price',
       'VAT',
       'Total'
     ];
     final data = invoice.items.map((item) {
-      final total = item.unitPrice * item.quantity * (1 + item.vat);
+      final total = item.unitPrice * item.quantity;
 
       return [
         item.description,
-        Utils.formatDate(item.date),
+        //Utils.formatDate(item.date),
         '${item.quantity}',
-        '\$ ${item.unitPrice}',
+        '\£ ${item.unitPrice}',
         '${item.vat} %',
-        '\$ ${total.toStringAsFixed(2)}',
+        '\£ ${total.toStringAsFixed(2)}',
       ];
     }).toList();
 
@@ -159,10 +159,11 @@ class PdfInvoiceApi {
         .map((item) => item.unitPrice * item.quantity)
         .reduce((item1, item2) => item1 + item2);
     final vatPercent = invoice.items.first.vat;
-    final vat = netTotal * vatPercent;
+    final vat = netTotal * (vatPercent / 100);
     final total = netTotal + vat;
 
     return Container(
+      //bunu github a commit edebilirmisin
       alignment: Alignment.centerRight,
       child: Row(
         children: [
@@ -178,7 +179,7 @@ class PdfInvoiceApi {
                   unite: true,
                 ),
                 buildText(
-                  title: 'Vat ${vatPercent * 100} %',
+                  title: 'Vat ${vatPercent} %',
                   value: Utils.formatPrice(vat),
                   unite: true,
                 ),
@@ -209,9 +210,19 @@ class PdfInvoiceApi {
         children: [
           Divider(),
           SizedBox(height: 2 * PdfPageFormat.mm),
-          buildSimpleText(title: 'Address', value: invoice.supplier.address),
-          SizedBox(height: 1 * PdfPageFormat.mm),
-          buildSimpleText(title: 'Paypal', value: invoice.supplier.paymentInfo),
+          //Banka hesabı bilgileri gelecek
+          // Account Name
+          //Sort Code
+          //Account Number
+          Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+            buildSimpleText(title: 'Account Name__: ', value: 'Asil Tokac'),
+            SizedBox(height: 1 * PdfPageFormat.mm),
+            buildSimpleText(title: 'Sort Code______: ', value: '1234123'),
+            SizedBox(height: 1 * PdfPageFormat.mm),
+            buildSimpleText(title: 'Account Number: ', value: '124334123'),
+          ])
+          /* SizedBox(height: 1 * PdfPageFormat.mm),
+          buildSimpleText(title: 'Paypal', value: invoice.supplier.paymentInfo), */
         ],
       );
 
@@ -242,7 +253,7 @@ class PdfInvoiceApi {
     final style = titleStyle ?? TextStyle(fontWeight: FontWeight.bold);
 
     return Container(
-      width: width,
+      width: width / 1.2,
       child: Row(
         children: [
           Expanded(child: Text(title, style: style)),

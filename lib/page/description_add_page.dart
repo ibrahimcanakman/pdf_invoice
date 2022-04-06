@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdf_invoice/contoller/description_controllers.dart';
 import 'package:pdf_invoice/page/home_page.dart';
+import 'package:pdf_invoice/page/tarih_sec.dart';
 
 import '../api/pdf_api.dart';
 import '../api/pdf_invoice_api.dart';
@@ -9,6 +10,8 @@ import '../model/customer.dart';
 import '../model/invoice.dart';
 import '../model/supplier.dart';
 import '../widget/button_widget.dart';
+
+import 'alici_sec.dart';
 
 final descCounterProvider = StateProvider<int>(
   (ref) => 1,
@@ -84,25 +87,25 @@ class DescriptionAddPage extends ConsumerWidget {
 
                       final invoice = Invoice(
                         supplier: Supplier(
-                          name: ref.watch(saticiFirmaProvider)!,
-                          address: ref.watch(saticiAdresProvider)!,
+                          name: ref.watch(gecerliMusteri)['adi'],
+                          address: ref.watch(gecerliMusteri)['adresi'],
                           paymentInfo: 'https://paypal.me/sarahfieldzz',
                         ),
                         customer: Customer(
-                          name: ref.watch(aliciFirmaProvider)!,
-                          address: ref.watch(aliciAdresProvider)!,
+                          name: ref.watch(gecerliMusteri)['adi'],
+                          address: ref.watch(gecerliMusteri)['adresi'],
                         ),
                         info: InvoiceInfo(
-                          date: date,
-                          dueDate: dueDate,
-                          description: ref.watch(aciklamaProvider)!,
-                          number: '${DateTime.now().year}-9999',
+                          date: ref.watch(tarihProvider),
+                          //dueDate: dueDate,
+                          description: ref.watch(aciklamaProvider) ?? '',
+                          //number: '${DateTime.now().year}-9999',
                         ),
                         items: [
                           for (var item in ref.watch(controllerListProvider))
                             InvoiceItem(
                               description: item['urunAdi']!.text,
-                              date: DateTime.now(),
+                              //date: DateTime.now(),
                               quantity: int.parse(item['urunMiktari']!.text),
                               vat: double.parse(item['urunKDV']!.text),
                               unitPrice: double.parse(item['urunBirim']!.text),
@@ -152,7 +155,8 @@ class DescriptionAddPage extends ConsumerWidget {
                         ],
                       );
 
-                      final pdfFile = await PdfInvoiceApi.generate(invoice);
+                      final pdfFile = await PdfSayfaFormati.generate(
+                          invoice, ref.watch(tarihProvider));
 
                       PdfApi.openFile(pdfFile);
                     },

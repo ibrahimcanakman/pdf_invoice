@@ -1,5 +1,3 @@
-
-
 import 'package:pdf_invoice/model/supplier.dart';
 
 import 'customer.dart';
@@ -20,28 +18,28 @@ class Invoice {
 
 class InvoiceInfo {
   final String description;
-  final String number;
+  //final String number;
   final DateTime date;
-  final DateTime dueDate;
+  //final DateTime dueDate;
 
   const InvoiceInfo({
     required this.description,
-    required this.number,
+    //required this.number,
     required this.date,
-    required this.dueDate,
+    //required this.dueDate,
   });
 }
 
 class InvoiceItem {
   final String description;
-  final DateTime date;
+  //final DateTime date;
   final int quantity;
   final double vat;
   final double unitPrice;
 
   const InvoiceItem({
     required this.description,
-    required this.date,
+    //required this.date,
     required this.quantity,
     required this.vat,
     required this.unitPrice,
