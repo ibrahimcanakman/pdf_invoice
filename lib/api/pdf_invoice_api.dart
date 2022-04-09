@@ -10,42 +10,30 @@ import '../model/supplier.dart';
 import '../utils.dart';
 
 class PdfSayfaFormati {
-  static Future<File> generate(Invoice invoice, DateTime tarih) async {
+  static Future<File> generate(Invoice invoice, DateTime tarih, Map bankaBilgileri) async {
     final pdf = Document();
 
     pdf.addPage(MultiPage(
       build: (context) => [
         buildHeader(invoice, tarih),
-        SizedBox(height: 3 * PdfPageFormat.cm),
-        buildTitle(invoice),
+        SizedBox(height: 2 * PdfPageFormat.cm),
+        buildDescription(invoice),
         buildInvoice(invoice),
         Divider(),
         buildTotal(invoice),
       ],
-      footer: (context) => buildFooter(invoice),
+      footer: (context) => buildFooter(invoice, bankaBilgileri),
     ));
 
     return PdfApi.saveDocument(name: 'my_invoice.pdf', pdf: pdf);
   }
 
   static Widget buildHeader(Invoice invoice, DateTime tarih) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           SizedBox(height: 1 * PdfPageFormat.cm),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              buildSupplierAddress(invoice.supplier),
-              Container(
-                height: 50,
-                width: 50,
-                child: BarcodeWidget(
-                  barcode: Barcode.qrCode(),
-                  data: '1111',
-                ),
-              ),
-            ],
-          ),
+          buildTitle(),
+          buildSupplierAddress(invoice.supplier),
           SizedBox(height: 1 * PdfPageFormat.cm),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -58,13 +46,15 @@ class PdfSayfaFormati {
         ],
       );
 
-  static Widget buildCustomerAddress(Customer customer) => Column(
+  static Widget buildCustomerAddress(Customer customer) => Container(
+      width: 60 * PdfPageFormat.mm,
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(customer.name, style: TextStyle(fontWeight: FontWeight.bold)),
           Text(customer.address),
         ],
-      );
+      ));
 
   static Widget buildInvoiceInfo(InvoiceInfo info, DateTime tarih) {
     //final paymentTerms = '${info.dueDate.difference(info.date).inDays} days';
@@ -92,27 +82,39 @@ class PdfSayfaFormati {
     );
   }
 
-  static Widget buildSupplierAddress(Supplier supplier) => Column(
+  static Widget buildSupplierAddress(Supplier supplier) => Container(
+      width: 59 * PdfPageFormat.mm,
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(supplier.name, style: TextStyle(fontWeight: FontWeight.bold)),
           SizedBox(height: 1 * PdfPageFormat.mm),
           Text(supplier.address),
         ],
-      );
+      ));
 
-  static Widget buildTitle(Invoice invoice) => Column(
+  static Widget buildDescription(Invoice invoice) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'INVOICE',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 0.8 * PdfPageFormat.cm),
           Text(invoice.info.description),
           SizedBox(height: 0.8 * PdfPageFormat.cm),
         ],
       );
+  static Widget buildTitle() => Container(
+      width: 59 * PdfPageFormat.mm,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'INVOICE',
+            style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: PdfColor.fromRYB(0, 0, 0.6)),
+          ),
+          SizedBox(height: 0.8 * PdfPageFormat.cm),
+        ],
+      ));
 
   static Widget buildInvoice(Invoice invoice) {
     final headers = [
@@ -205,7 +207,7 @@ class PdfSayfaFormati {
     );
   }
 
-  static Widget buildFooter(Invoice invoice) => Column(
+  static Widget buildFooter(Invoice invoice, Map bankaBilgileri) => Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Divider(),
@@ -215,11 +217,11 @@ class PdfSayfaFormati {
           //Sort Code
           //Account Number
           Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-            buildSimpleText(title: 'Account Name__: ', value: 'Asil Tokac'),
+            buildSimpleText(title: 'Account Name__: ', value: bankaBilgileri['accountName']),
             SizedBox(height: 1 * PdfPageFormat.mm),
-            buildSimpleText(title: 'Sort Code______: ', value: '1234123'),
+            buildSimpleText(title: 'Sort Code______: ', value: bankaBilgileri['sortCode']),
             SizedBox(height: 1 * PdfPageFormat.mm),
-            buildSimpleText(title: 'Account Number: ', value: '124334123'),
+            buildSimpleText(title: 'Account Number: ', value: bankaBilgileri['accountNumber']),
           ])
           /* SizedBox(height: 1 * PdfPageFormat.mm),
           buildSimpleText(title: 'Paypal', value: invoice.supplier.paymentInfo), */

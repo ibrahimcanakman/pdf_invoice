@@ -92,11 +92,11 @@ class AliciBilgisiEkle extends ConsumerWidget {
                         };
                         try {
                           await _firestore
-                              .collection('ahmet')
+                              .collection(ref.watch(saticiAdi))
                               .doc(adiController.text)
                               .set(eklenecakMap);
                           var gelenBilgi =
-                              await _firestore.collection('ahmet').get();
+                              await _firestore.collection(ref.watch(saticiAdi)).get();
 
                           ref
                               .read(provider.notifier)

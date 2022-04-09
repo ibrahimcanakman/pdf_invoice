@@ -5,17 +5,24 @@ import 'package:pdf_invoice/page/alici_bilgisi_ekle.dart';
 import 'package:pdf_invoice/page/anasayfa.dart';
 import 'package:pdf_invoice/page/tarih_sec.dart';
 
-import 'description_add_page.dart';
 final gecerliMusteri = StateProvider<Map<String, dynamic>>(
-    (ref) => {},
-  );
+  (ref) => {},
+);
+
 class AliciSec extends ConsumerWidget {
   AliciSec({Key? key}) : super(key: key);
 
-  
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    var liste = ref.watch(provider);
+    List<Map<String,dynamic>> aliciListesi=[];
+    if (liste.isNotEmpty) {
+      for (var item in liste) {
+      item.id == 'saticiFirma' ? null : aliciListesi.add(item.data());
+    }
+    }
+    
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Alıcı Seç'),
@@ -48,15 +55,19 @@ class AliciSec extends ConsumerWidget {
                 ),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: ref.watch(provider).length,
+                    itemCount: aliciListesi.length,
                     itemBuilder: (context, index) {
                       return Column(
                         children: [
                           ListTile(
                             onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => TarihSec(),));
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => TarihSec(),
+                                  ));
                               ref.read(gecerliMusteri.notifier).update((state) {
-                                return ref.watch(provider)[index].data();
+                                return aliciListesi[index];
                               });
                               /*Navigator.push(
                                   context,
@@ -64,8 +75,7 @@ class AliciSec extends ConsumerWidget {
                                     builder: (context) => DescriptionAddPage(),
                                   )); */
                             },
-                            title:
-                                Text(ref.watch(provider)[index].data()['adi']),
+                            title: Text(aliciListesi[index]['adi']),
                           ),
                           Divider(
                             height: 0,
