@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:pdf_invoice/page/description_add_page.dart';
 
-final tarihProvider = StateProvider<DateTime>(
-  (ref) => DateTime.now(),
-);
+import '../provider/all_providers.dart';
+
+
 
 class TarihSec extends ConsumerWidget {
   const TarihSec({Key? key}) : super(key: key);
@@ -19,10 +20,14 @@ class TarihSec extends ConsumerWidget {
         child: ElevatedButton(
             onPressed: () async {
               DateTime seciliGun = await gunSec(context);
+              String gun = DateFormat('dd.MM.yyyy').format(seciliGun);
+              String faturaNo = DateFormat('yyyyMMdd').format(seciliGun);
+              debugPrint(faturaNo);
+              ref.read(faturaNoProvider.notifier).update((state) => faturaNo);
 
               /* String secilenTarih =
                   '${seciliGun.day}.${seciliGun.month}.${seciliGun.year}'; */
-              ref.read(tarihProvider.notifier).update((state) => seciliGun);
+              ref.read(tarihProvider.notifier).update((state) => gun);
               Navigator.push(
                   context,
                   MaterialPageRoute(

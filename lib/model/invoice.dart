@@ -19,7 +19,7 @@ class Invoice {
 class InvoiceInfo {
   final String description;
   //final String number;
-  final DateTime date;
+  final String date;
   //final DateTime dueDate;
 
   const InvoiceInfo({

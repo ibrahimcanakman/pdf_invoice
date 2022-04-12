@@ -10,12 +10,12 @@ import '../model/supplier.dart';
 import '../utils.dart';
 
 class PdfSayfaFormati {
-  static Future<File> generate(Invoice invoice, DateTime tarih, Map bankaBilgileri) async {
+  static Future<File> generate(Invoice invoice, String tarih, String faturaNo, Map bankaBilgileri) async {
     final pdf = Document();
 
     pdf.addPage(MultiPage(
       build: (context) => [
-        buildHeader(invoice, tarih),
+        buildHeader(invoice, tarih, faturaNo),
         SizedBox(height: 2 * PdfPageFormat.cm),
         buildDescription(invoice),
         buildInvoice(invoice),
@@ -28,7 +28,7 @@ class PdfSayfaFormati {
     return PdfApi.saveDocument(name: 'my_invoice.pdf', pdf: pdf);
   }
 
-  static Widget buildHeader(Invoice invoice, DateTime tarih) => Column(
+  static Widget buildHeader(Invoice invoice, String tarih, String faturaNo) => Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           SizedBox(height: 1 * PdfPageFormat.cm),
@@ -40,7 +40,7 @@ class PdfSayfaFormati {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               buildCustomerAddress(invoice.customer),
-              buildInvoiceInfo(invoice.info, tarih),
+              buildInvoiceInfo(invoice.info, tarih, faturaNo),
             ],
           ),
         ],
@@ -56,7 +56,7 @@ class PdfSayfaFormati {
         ],
       ));
 
-  static Widget buildInvoiceInfo(InvoiceInfo info, DateTime tarih) {
+  static Widget buildInvoiceInfo(InvoiceInfo info, String tarih, String faturaNo) {
     //final paymentTerms = '${info.dueDate.difference(info.date).inDays} days';
     final titles = <String>[
       'Invoice Number:',
@@ -65,8 +65,8 @@ class PdfSayfaFormati {
       //'Due Date:'
     ];
     final data = <String>[
-      '${tarih.year}${tarih.month.toString().length == 1 ? '0${tarih.month}' : '${tarih.month}'}${tarih.day.toString().length == 1 ? '0${tarih.day}' : '${tarih.day}'}',
-      '${tarih.day}.${tarih.month}.${tarih.year}', //tarih yazılacak
+      /* '${tarih.year}${tarih.month.toString().length == 1 ? '0${tarih.month}' : '${tarih.month}'}${tarih.day.toString().length == 1 ? '0${tarih.day}' : '${tarih.day}'}' */faturaNo,//faturaNo
+      tarih, //tarih yazılacak
       //paymentTerms,
       //Utils.formatDate(info.dueDate),
     ];

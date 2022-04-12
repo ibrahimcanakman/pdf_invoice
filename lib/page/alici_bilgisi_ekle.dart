@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdf_invoice/page/anasayfa.dart';
 
+import '../provider/all_providers.dart';
+
 class AliciBilgisiEkle extends ConsumerWidget {
   AliciBilgisiEkle({Key? key}) : super(key: key);
 

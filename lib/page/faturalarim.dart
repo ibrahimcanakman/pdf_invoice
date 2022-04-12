@@ -1,23 +1,27 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdf_invoice/database_helper.dart';
-import 'package:pdf_invoice/page/alici_sec.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:pdf_invoice/page/faturalarim.dart';
+import 'package:pdf_invoice/page/anasayfa.dart';
+import 'package:pdf_invoice/page/description_add_page.dart';
 
+import '../api/pdf_api.dart';
+import '../api/pdf_invoice_api.dart';
+import '../model/customer.dart';
+import '../model/invoice.dart';
+import '../model/supplier.dart';
 import '../provider/all_providers.dart';
+import 'alici_sec.dart';
+import 'home_page.dart';
 
-
-class AnaSayfa extends ConsumerStatefulWidget {
-  const AnaSayfa({Key? key}) : super(key: key);
+class Faturalarim extends ConsumerStatefulWidget {
+  const Faturalarim({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _AnaSayfaState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _FaturalarimState();
 }
 
-class _AnaSayfaState extends ConsumerState<AnaSayfa> {
-  FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
+class _FaturalarimState extends ConsumerState<Faturalarim> {
   final _saticiKey = GlobalKey<FormState>();
   TextEditingController _saticiAdiController = TextEditingController();
   TextEditingController _saticiAdresiController = TextEditingController();
@@ -26,38 +30,100 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
   TextEditingController _bankaAccountNameController = TextEditingController();
   TextEditingController _bankaSortCodeController = TextEditingController();
   TextEditingController _bankaAccountNumberController = TextEditingController();
-
+  FirebaseFirestore _firestore = FirebaseFirestore.instance;
   DatabaseHelper _databaseHelper = DatabaseHelper();
-  late List<Map<String,dynamic>> saticiFirma;
+
   @override
   void initState() {
-    // TODO: implement initState
+    faturalariGetir();
     super.initState();
-    saticiyiLocaldenGetir();
   }
 
-  saticiyiLocaldenGetir()async{
-    saticiFirma = await _databaseHelper.getir();
+  faturalariGetir() async {
+    var value = await _databaseHelper.getir();
+    ref
+        .read(saticiAdi.notifier)
+        .update((state) => value.first['firmaAdi'].toString());
+    var gelenFaturalarSS = await _firestore
+        .collection(value.first['firmaAdi'].toString())
+        .doc('saticiFirma')
+        .collection('faturalar')
+        .get();
+    var gelenFaturalarListesi = gelenFaturalarSS.docs;
+    gelenFaturalarListesi
+        .sort((a, b) => int.parse(b.id).compareTo(int.parse(a.id)));
+    ref
+        .read(faturalarProvider.notifier)
+        .update((state) => gelenFaturalarListesi);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: Text('Ana Sayfa'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            // Fatura Kes Butonu
-            SizedBox(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height / 10,
-                child: ElevatedButton(
-                    onPressed: () async {
-                      if (saticiFirma.isEmpty) {
+    //faturalariGetir();
+    
+    return WillPopScope(
+      onWillPop: () {
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AnaSayfa(),
+            ),
+            (route) => false);
+        return Future.value(true);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Faturalarım'),
+        ),
+        bottomNavigationBar: Visibility(
+          visible: ref.watch(radioProvider) != null,
+          child: BottomNavigationBar(
+              selectedItemColor: Colors.deepOrange,
+              unselectedItemColor: Colors.deepOrange,
+              selectedFontSize: 12,
+              unselectedFontSize: 12,
+              currentIndex: 0,
+              onTap: (index) {
+                switch (index) {
+                  case 0:
+                    pdfGoruntule();
+                    debugPrint('0 tıklandı');
+                    break;
+                  case 1:
+                    faturaDuzenle();
+                    debugPrint('1 tıklandı');
+                    break;
+                  case 2:
+                    //faturaGonder();
+                    debugPrint('2 tıklandı');
+                    break;
+                  default:
+                }
+              },
+              items: const [
+                BottomNavigationBarItem(
+                    label: 'Görüntüle', icon: Icon(Icons.picture_as_pdf)),
+                BottomNavigationBarItem(
+                    label: 'Düzenle', icon: Icon(Icons.edit_note_sharp)),
+                BottomNavigationBarItem(
+                    label: 'Gönder', icon: Icon(Icons.share)),
+              ]),
+        ),
+        body: ref.watch(faturalarProvider).isEmpty
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : Column(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      Future(
+                        () async {
+                          var value = await _databaseHelper.getir();
+                          return value;
+                        },
+                      ).then((value) async {
+                        if (value.isEmpty) {
                           showDialog<void>(
                             context: context,
                             barrierDismissible: false,
@@ -70,7 +136,7 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          const Text(
+                                          Text(
                                               'İlk girişiniz olduğu için faturalarda kullanılmak üzere firmanızın bilgilerini bir kereliğine kaydetmelisiniz ! '),
                                           SizedBox(
                                             height: MediaQuery.of(context)
@@ -295,9 +361,9 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
                           );
                         } else {
                           ref.read(saticiAdi.notifier).update(
-                              (state) => saticiFirma.first['firmaAdi'].toString());
+                              (state) => value.first['firmaAdi'].toString());
                           var gelenBilgi = await _firestore
-                              .collection(saticiFirma.first['firmaAdi'].toString())
+                              .collection(value.first['firmaAdi'].toString())
                               .get();
 
                           ref
@@ -309,46 +375,153 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
                                 builder: (context) => AliciSec(),
                               ));
                         }
-                      /* Future(
-                        () async {
-                          var value = await _databaseHelper.getir();
-                          return value;
-                        },
-                      ).then((value) async {
-                        
-                      }); */
+                      });
                     },
-                    child: const Text(
-                      'Fatura Kes',
-                      style: TextStyle(fontSize: 24),
-                    ))),
-
-            SizedBox(
-              height: MediaQuery.of(context).size.height / 30,
-            ),
-
-            // Faturalarım Butonu
-            SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height / 10,
-              child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Faturalarim(),
-                        ));
-                  },
-                  child: const Text(
-                    'Faturalarım',
-                    style: TextStyle(fontSize: 24),
-                  )),
-            )
-          ],
-        ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: const [
+                        Icon(
+                          Icons.add_circle,
+                          color: Colors.deepOrange,
+                          size: 30,
+                        ),
+                        Text(
+                          'Yeni Fatura Ekle',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 18),
+                        )
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: ref.watch(faturalarProvider).length,
+                      itemBuilder: (context, index) {
+                        return Column(
+                          children: [
+                            ListTile(
+                              onTap: () {
+                                ref
+                                    .read(radioProvider.notifier)
+                                    .update((state) => index);
+                                ref.read(seciliFaturaProvider.notifier).update(
+                                    (state) => ref
+                                        .watch(faturalarProvider)[index]
+                                        .data());
+                              },
+                              leading: Radio(
+                                value: index,
+                                groupValue: ref.watch(radioProvider),
+                                onChanged: (int? yeniDeger) {
+                                  ref
+                                      .read(radioProvider.notifier)
+                                      .update((state) => index);
+                                  ref
+                                      .read(seciliFaturaProvider.notifier)
+                                      .update((state) => ref
+                                          .watch(faturalarProvider)[index]
+                                          .data());
+                                },
+                              ),
+                              title: Text(ref
+                                  .watch(faturalarProvider)[index]
+                                  .data()['aliciAdi']),
+                              subtitle: Text(ref
+                                  .watch(faturalarProvider)[index]
+                                  .data()['faturaTarihi']),
+                              trailing: Text(
+                                  '£ ${ref.watch(faturalarProvider)[index].data()['faturaToplami']}'),
+                            ),
+                            const Divider(
+                              height: 0,
+                              thickness: 1,
+                            )
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
-  
+  }
+
+  void pdfGoruntule() async {
+    var saticiBilgileriSS = await _firestore
+        .collection(ref.watch(saticiAdi).toString())
+        .doc('saticiFirma')
+        .get();
+    var saticiBilgileriMap = saticiBilgileriSS.data();
+
+    Map<String, dynamic> bankaBilgileri = {
+      'accountName': saticiBilgileriMap!['bankaAccountName'],
+      'sortCode': saticiBilgileriMap['bankaSortCode'],
+      'accountNumber': saticiBilgileriMap['bankaAccountNumber']
+    };
+
+    final invoice = Invoice(
+      supplier: Supplier(
+        name: saticiBilgileriMap['adi'],
+        address: saticiBilgileriMap['adresi'],
+      ),
+      customer: Customer(
+        name: ref.watch(seciliFaturaProvider)['aliciAdi'],
+        address: ref.watch(seciliFaturaProvider)['aliciAdresi'],
+      ),
+      info: InvoiceInfo(
+        date: ref.watch(seciliFaturaProvider)['faturaTarihi'],
+        description: '',
+      ),
+      items: [
+        for (var item in ref.watch(seciliFaturaProvider)['urunler'])
+          InvoiceItem(
+            description: item['urunAdi']!,
+            quantity: int.parse(item['urunMiktari']!),
+            vat: double.parse(item['urunKDV']!),
+            unitPrice: double.parse(item['urunBirimi']!),
+          ),
+      ],
+    );
+
+    final pdfFile = await PdfSayfaFormati.generate(
+        invoice,
+        ref.watch(seciliFaturaProvider)['faturaTarihi'],
+        ref.watch(seciliFaturaProvider)['faturaNo'],
+        bankaBilgileri);
+
+    PdfApi.openFile(pdfFile);
+  }
+
+  void faturaDuzenle() async {
+    List<Map<String, dynamic>> urunler = [];
+    for (var item in ref.watch(seciliFaturaProvider)['urunler']) {
+      var eklenecekUrun = {
+        'urunAdi': item['urunAdi'],
+        'urunMiktari': item['urunMiktari'],
+        'urunBirimi': item['urunBirimi'],
+        'urunKDV': item['urunKDV'],
+      };
+      urunler.add(eklenecekUrun);
+    }
+
+    ref.read(urunListesiProvider.notifier).update((state) => urunler);
+    ref.read(gecerliMusteri.notifier).update((state) => {
+          'adi': ref.watch(seciliFaturaProvider)['aliciAdi'],
+          'adresi': ref.watch(seciliFaturaProvider)['aliciAdresi'],
+          'email': '',
+          'telefon': ''
+        });
+    ref
+        .read(faturaNoProvider.notifier)
+        .update((state) => ref.watch(seciliFaturaProvider)['faturaNo']);
+    ref
+        .read(tarihProvider.notifier)
+        .update((state) => ref.watch(seciliFaturaProvider)['faturaTarihi']);
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DescriptionAddPage(),
+        ));
   }
 }
-

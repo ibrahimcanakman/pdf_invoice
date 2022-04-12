@@ -2,62 +2,31 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdf_invoice/contoller/description_controllers.dart';
-import 'package:pdf_invoice/page/home_page.dart';
-import 'package:pdf_invoice/page/tarih_sec.dart';
+import 'package:pdf_invoice/page/faturalarim.dart';
+import '../provider/all_providers.dart';
 
-import '../api/pdf_api.dart';
-import '../api/pdf_invoice_api.dart';
-import '../model/customer.dart';
-import '../model/invoice.dart';
-import '../model/supplier.dart';
-import '../widget/button_widget.dart';
-
-import 'alici_sec.dart';
-import 'anasayfa.dart';
-
-final descCounterProvider = StateProvider<int>(
-  (ref) => 1,
-);
-final urunListesiProvider = StateProvider<List<Map<String, dynamic>>>(
-  (ref) {
-    return [];
-  },
-);
-
-final toplamDegerleriProvider = StateProvider<Map<String, dynamic>>(
-  (ref) {
-    var faturaElemanlariListesi = ref.watch(urunListesiProvider);
-    if (faturaElemanlariListesi.isNotEmpty) {
-      double toplam = 0;
-      double kdvToplam = 0;
-      double kdvDahilToplam = 0;
-
-      for (var item in faturaElemanlariListesi) {
-        toplam +=
-            double.parse(item['urunMiktari']) * double.parse(item['urunBirim']);
-        kdvToplam += double.parse(item['urunMiktari']) *
-            double.parse(item['urunBirim']) *
-            double.parse(item['urunKDV']) /
-            100;
-      }
-      kdvDahilToplam = toplam + kdvToplam;
-      return {
-        'toplam': toplam,
-        'kdvToplam': kdvToplam,
-        'kdvDahilToplam': kdvDahilToplam
-      };
-    } else {
-      return {'toplam': '', 'kdvToplam': '', 'kdvDahilToplam': ''};
-    }
-  },
-);
-
-class DescriptionAddPage extends ConsumerWidget {
+class DescriptionAddPage extends ConsumerStatefulWidget {
   const DescriptionAddPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    var eklenenUrunlerList = ref.watch(urunListesiProvider);
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _DescriptionAddPageState();
+}
+
+class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
+  FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  @override
+  Widget build(BuildContext context) {
+    Future(
+      () {
+        ref.read(toplamDegerleriProvider.notifier).update(
+              (state) => toplamHesapla(ref),
+            );
+      },
+    );
+
+    //var eklenenUrunlerList = ref.watch(urunListesiProvider);
     /* Future(
       () {
         if (controllerMapList.isEmpty) {
@@ -78,7 +47,7 @@ class DescriptionAddPage extends ConsumerWidget {
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          title: Text('Description Add'),
+          title: const Text('Description Add'),
         ),
         body: Column(
           children: [
@@ -136,33 +105,41 @@ class DescriptionAddPage extends ConsumerWidget {
               color: Colors.grey,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  SizedBox(
-                      width: MediaQuery.of(context).size.width / 4,
+                children: const [
+                  Expanded(
+                      flex: 1,
+                      //width: MediaQuery.of(context).size.width / 5,
+                      child: SizedBox()),
+                  Expanded(
+                      flex: 3,
+                      //width: MediaQuery.of(context).size.width / 5,
                       child: Center(
                         child: Text(
                           'Ürün Adı:',
                           textAlign: TextAlign.center,
                         ),
                       )),
-                  SizedBox(
-                      width: MediaQuery.of(context).size.width / 4,
+                  Expanded(
+                      flex: 3,
+                      //width: MediaQuery.of(context).size.width / 5,
                       child: Center(
                         child: Text(
                           'Miktarı:',
                           textAlign: TextAlign.center,
                         ),
                       )),
-                  SizedBox(
-                      width: MediaQuery.of(context).size.width / 4,
+                  Expanded(
+                      flex: 3,
+                      //width: MediaQuery.of(context).size.width / 5,
                       child: Center(
                         child: Text(
                           'Birim Fiyatı:',
                           textAlign: TextAlign.center,
                         ),
                       )),
-                  SizedBox(
-                      width: MediaQuery.of(context).size.width / 4,
+                  Expanded(
+                      flex: 3,
+                      //width: MediaQuery.of(context).size.width / 5,
                       child: Center(
                         child: Text(
                           'KDV:',
@@ -182,8 +159,25 @@ class DescriptionAddPage extends ConsumerWidget {
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            SizedBox(
-                                width: MediaQuery.of(context).size.width / 4,
+                            Expanded(
+                                flex: 1,
+                                //width: MediaQuery.of(context).size.width / 5,
+                                child: Center(
+                                    child: GestureDetector(
+                                  onTap: () {
+                                    urunCikar(index);
+                                    /* setState(() {
+                                      
+                                    }); */
+                                  },
+                                  child: const CircleAvatar(
+                                    backgroundColor: Colors.deepOrange,
+                                    child: Icon(Icons.remove),
+                                  ),
+                                ))),
+                            Expanded(
+                                flex: 3,
+                                //width: MediaQuery.of(context).size.width / 4,
                                 child: Center(
                                   child: Text(
                                     ref.watch(urunListesiProvider)[index]
@@ -192,8 +186,9 @@ class DescriptionAddPage extends ConsumerWidget {
                                     textAlign: TextAlign.center,
                                   ),
                                 )),
-                            SizedBox(
-                                width: MediaQuery.of(context).size.width / 4,
+                            Expanded(
+                                flex: 3,
+                                //width: MediaQuery.of(context).size.width / 4,
                                 child: Center(
                                   child: Text(
                                     ref.watch(urunListesiProvider)[index]
@@ -201,17 +196,19 @@ class DescriptionAddPage extends ConsumerWidget {
                                     textAlign: TextAlign.center,
                                   ),
                                 )),
-                            SizedBox(
-                                width: MediaQuery.of(context).size.width / 4,
+                            Expanded(
+                                flex: 3,
+                                //width: MediaQuery.of(context).size.width / 4,
                                 child: Center(
                                   child: Text(
                                     ref.watch(urunListesiProvider)[index]
-                                        ['urunBirim'],
+                                        ['urunBirimi'],
                                     textAlign: TextAlign.center,
                                   ),
                                 )),
-                            SizedBox(
-                                width: MediaQuery.of(context).size.width / 4,
+                            Expanded(
+                                flex: 3,
+                                //width: MediaQuery.of(context).size.width / 4,
                                 child: Center(
                                   child: Text(
                                     ref.watch(urunListesiProvider)[index]
@@ -224,7 +221,7 @@ class DescriptionAddPage extends ConsumerWidget {
                       : ref.watch(urunListesiProvider).isNotEmpty
                           ? Column(
                               children: [
-                                Divider(
+                                const Divider(
                                   color: Colors.black,
                                   thickness: 1,
                                 ),
@@ -243,7 +240,7 @@ class DescriptionAddPage extends ConsumerWidget {
                                                       .size
                                                       .width /
                                                   3,
-                                              child: Text(
+                                              child: const Text(
                                                 'Net total',
                                                 style: TextStyle(
                                                     fontWeight:
@@ -269,7 +266,7 @@ class DescriptionAddPage extends ConsumerWidget {
                                                       .size
                                                       .width /
                                                   3,
-                                              child: Text(
+                                              child: const Text(
                                                 'Vat 18 %',
                                                 style: TextStyle(
                                                     fontWeight:
@@ -291,7 +288,7 @@ class DescriptionAddPage extends ConsumerWidget {
                                             MediaQuery.of(context).size.width *
                                                 7 /
                                                 12,
-                                        child: Divider(
+                                        child: const Divider(
                                           thickness: 1,
                                           color: Colors.black,
                                         ),
@@ -305,7 +302,7 @@ class DescriptionAddPage extends ConsumerWidget {
                                                       .size
                                                       .width /
                                                   3,
-                                              child: Text(
+                                              child: const Text(
                                                 'Total amount due',
                                                 style: TextStyle(
                                                     fontWeight:
@@ -327,7 +324,7 @@ class DescriptionAddPage extends ConsumerWidget {
                                             MediaQuery.of(context).size.width *
                                                 7 /
                                                 12,
-                                        child: Divider(
+                                        child: const Divider(
                                           thickness: 1,
                                           color: Colors.grey,
                                         ),
@@ -337,7 +334,7 @@ class DescriptionAddPage extends ConsumerWidget {
                                 )
                               ],
                             )
-                          : SizedBox();
+                          : const SizedBox();
                 },
               ),
             ),
@@ -358,6 +355,7 @@ class DescriptionAddPage extends ConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.only(left: 8.0),
                         child: FloatingActionButton(
+                          heroTag: '0',
                           onPressed: () {
                             /* TextEditingController urunAdi1 = TextEditingController();
                       TextEditingController urunMiktari1 =
@@ -366,21 +364,24 @@ class DescriptionAddPage extends ConsumerWidget {
                       TextEditingController urunKDV1 = TextEditingController(); */
                             if (urunAdi.text.trim().isNotEmpty &&
                                 urunMiktari.text.trim().isNotEmpty &&
-                                urunBirim.text.trim().isNotEmpty &&
+                                urunBirimi.text.trim().isNotEmpty &&
                                 urunKDV.text.trim().isNotEmpty) {
                               var eklenenUrun = {
                                 'urunAdi': urunAdi.text,
                                 'urunMiktari': urunMiktari.text,
-                                'urunBirim': urunBirim.text,
+                                'urunBirimi': urunBirimi.text,
                                 'urunKDV': urunKDV.text
                               };
 
                               ref
                                   .read(urunListesiProvider.notifier)
                                   .update((state) => [...state, eklenenUrun]);
+                              ref
+                                  .read(toplamDegerleriProvider.notifier)
+                                  .update((state) => toplamHesapla(ref));
                               urunAdi.text = '';
                               urunMiktari.text = '';
-                              urunBirim.text = '';
+                              urunBirimi.text = '';
                               urunKDV.text = '';
                             } else {
                               ScaffoldMessenger.of(context)
@@ -390,11 +391,11 @@ class DescriptionAddPage extends ConsumerWidget {
                                     bottom: MediaQuery.of(context)
                                         .viewInsets
                                         .bottom),
-                                child: Text('Alanlar boş bırakılamaz...'),
+                                child: const Text('Alanlar boş bırakılamaz...'),
                               )));
                             }
                           },
-                          child: Icon(Icons.add),
+                          child: const Icon(Icons.add),
                         ),
                       ),
                       //Ürün girişi textformfieldlar
@@ -409,11 +410,20 @@ class DescriptionAddPage extends ConsumerWidget {
                         child: ElevatedButton(
                             onPressed: () {
                               if (ref.watch(urunListesiProvider).isNotEmpty) {
+                                faturayiFirebaseYaz(ref);
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => FaturaSayfasi(),
+                                      builder: (context) => Faturalarim(),
                                     ));
+                                ref
+                                    .read(radioProvider.notifier)
+                                    .update((state) => null);
+                                /* Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => FaturaSayfasi(),
+                                    )); */
                               } else {
                                 ScaffoldMessenger.of(context)
                                     .showSnackBar(SnackBar(
@@ -427,7 +437,7 @@ class DescriptionAddPage extends ConsumerWidget {
                                 )));
                               }
                             },
-                            child: Text('Kaydet'))),
+                            child: const Text('Kaydet'))),
                   ),
                 ],
               ),
@@ -457,6 +467,62 @@ class DescriptionAddPage extends ConsumerWidget {
           ],
         ));
   }
+
+  Map<String, dynamic> toplamHesapla(WidgetRef ref) {
+    var faturaElemanlariListesi = ref.watch(urunListesiProvider);
+    if (faturaElemanlariListesi.isNotEmpty) {
+      double toplam = 0;
+      double kdvToplam = 0;
+      double kdvDahilToplam = 0;
+
+      for (var item in faturaElemanlariListesi) {
+        toplam += double.parse(item['urunMiktari']) *
+            double.parse(item['urunBirimi']);
+        kdvToplam += double.parse(item['urunMiktari']) *
+            double.parse(item['urunBirimi']) *
+            double.parse(item['urunKDV']) /
+            100;
+      }
+      kdvDahilToplam = toplam + kdvToplam;
+      return {
+        'toplam': toplam,
+        'kdvToplam': kdvToplam,
+        'kdvDahilToplam': kdvDahilToplam
+      };
+    } else {
+      return {'toplam': '', 'kdvToplam': '', 'kdvDahilToplam': ''};
+    }
+  }
+
+  void faturayiFirebaseYaz(WidgetRef ref) async {
+    Map<String, dynamic> eklenecekFatura = {
+      'aliciAdi': ref.watch(gecerliMusteri)['adi'],
+      'aliciAdresi': ref.watch(gecerliMusteri)['adresi'],
+      'faturaNo': ref.watch(faturaNoProvider),
+      'faturaTarihi': ref.watch(tarihProvider),
+      'faturaToplami':
+          ref.watch(toplamDegerleriProvider)['kdvDahilToplam'].toString(),
+      'urunler': [for (var item in ref.watch(urunListesiProvider)) item]
+    };
+
+    await _firestore
+        .collection(ref.watch(saticiAdi))
+        .doc('saticiFirma')
+        .collection('faturalar')
+        .doc(ref.watch(faturaNoProvider))
+        .set(eklenecekFatura);
+    ref.read(urunListesiProvider.notifier).update((state) => []);
+  }
+
+  void urunCikar(int index) {
+    var urunListesi = ref.watch(urunListesiProvider);
+    var silinecekEleman = ref.watch(urunListesiProvider)[index];
+    List<Map<String, dynamic>> guncelUrunListesi = [];
+    for (var item in urunListesi) {
+      item == silinecekEleman ? null : guncelUrunListesi.add(item);
+    }
+    ref.read(urunListesiProvider.notifier).update((state) => guncelUrunListesi);
+  }
 }
 
 class DescriptionWidget extends StatelessWidget {
@@ -480,7 +546,7 @@ class DescriptionWidget extends StatelessWidget {
               child: TextFormField(
                 controller: urunAdi,
                 decoration: InputDecoration(
-                    label: Text('Ürün Adı'),
+                    label: const Text('Ürün Adı'),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15))),
               ),
@@ -492,7 +558,7 @@ class DescriptionWidget extends StatelessWidget {
                 keyboardType: TextInputType.number,
                 controller: urunMiktari,
                 decoration: InputDecoration(
-                    label: Text('Ürün Miktarı'),
+                    label: const Text('Ürün Miktarı'),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15))),
               ),
@@ -510,9 +576,9 @@ class DescriptionWidget extends StatelessWidget {
               width: MediaQuery.of(context).size.width * 0.35,
               child: TextFormField(
                 keyboardType: TextInputType.number,
-                controller: urunBirim,
+                controller: urunBirimi,
                 decoration: InputDecoration(
-                    label: Text('Ürün Birim Fiyatı'),
+                    label: const Text('Ürün Birim Fiyatı'),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15))),
               ),
@@ -524,7 +590,7 @@ class DescriptionWidget extends StatelessWidget {
                 keyboardType: TextInputType.number,
                 controller: urunKDV,
                 decoration: InputDecoration(
-                    label: Text('Ürün KDV %'),
+                    label: const Text('Ürün KDV %'),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15))),
               ),
@@ -535,124 +601,6 @@ class DescriptionWidget extends StatelessWidget {
           height: MediaQuery.of(context).size.height * 0.02,
         ), */
       ],
-    );
-  }
-}
-
-class FaturaSayfasi extends ConsumerWidget {
-  FaturaSayfasi({Key? key}) : super(key: key);
-
-  FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  Map<String, dynamic> bankaBilgileri = {};
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    Future(
-      () async {
-        var saticiFirma = await _firestore
-            .collection(ref.watch(saticiAdi))
-            .doc('saticiFirma')
-            .get();
-        return saticiFirma;
-      },
-    ).then((value) {
-      var satici = value.data();
-      bankaBilgileri = {
-        'accountName': satici!['bankaAccountName'],
-        'sortCode': satici['bankaSortCode'],
-        'accountNumber': satici['bankaAccountNumber']
-      };
-    });
-    return Scaffold(
-      appBar: AppBar(title: Text('Fatura Oluşturma')),
-      body: Center(
-        child: ElevatedButton(
-            onPressed: () async {
-              Map<String, dynamic> satici = {};
-              for (var item in ref.watch(provider)) {
-                item.id == 'saticiFirma' ? satici = item.data() : null;
-              }
-
-              final date = DateTime.now();
-              final dueDate = date.add(const Duration(days: 7));
-
-              final invoice = Invoice(
-                supplier: Supplier(
-                  name: satici['adi'],
-                  address: satici['adresi'],
-                  paymentInfo: 'https://paypal.me/sarahfieldzz',
-                ),
-                customer: Customer(
-                  name: ref.watch(gecerliMusteri)['adi'],
-                  address: ref.watch(gecerliMusteri)['adresi'],
-                ),
-                info: InvoiceInfo(
-                  date: ref.watch(tarihProvider),
-                  //dueDate: dueDate,
-                  description: ref.watch(aciklamaProvider) ?? '',
-                  //number: '${DateTime.now().year}-9999',
-                ),
-                items: [
-                  for (var item in ref.watch(urunListesiProvider))
-                    InvoiceItem(
-                      description: item['urunAdi']!,
-                      //date: DateTime.now(),
-                      quantity: int.parse(item['urunMiktari']!),
-                      vat: double.parse(item['urunKDV']!),
-                      unitPrice: double.parse(item['urunBirim']!),
-                    ),
-                  /* InvoiceItem(
-                              description: 'Water',
-                              date: DateTime.now(),
-                              quantity: 8,
-                              vat: 0.19,
-                              unitPrice: 0.99,
-                            ),
-                            InvoiceItem(
-                              description: 'Orange',
-                              date: DateTime.now(),
-                              quantity: 3,
-                              vat: 0.19,
-                              unitPrice: 2.99,
-                            ),
-                            InvoiceItem(
-                              description: 'Apple',
-                              date: DateTime.now(),
-                              quantity: 8,
-                              vat: 0.19,
-                              unitPrice: 3.99,
-                            ),
-                            InvoiceItem(
-                              description: 'Mango',
-                              date: DateTime.now(),
-                              quantity: 1,
-                              vat: 0.19,
-                              unitPrice: 1.59,
-                            ),
-                            InvoiceItem(
-                              description: 'Blue Berries',
-                              date: DateTime.now(),
-                              quantity: 5,
-                              vat: 0.19,
-                              unitPrice: 0.99,
-                            ),
-                            InvoiceItem(
-                              description: 'Lemon',
-                              date: DateTime.now(),
-                              quantity: 4,
-                              vat: 0.19,
-                              unitPrice: 1.29,
-                            ), */
-                ],
-              );
-
-              final pdfFile = await PdfSayfaFormati.generate(
-                  invoice, ref.watch(tarihProvider), bankaBilgileri);
-
-              PdfApi.openFile(pdfFile);
-            },
-            child: Text('Faturayı Oluştur')),
-      ),
     );
   }
 }

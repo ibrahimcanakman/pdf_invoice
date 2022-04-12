@@ -5,9 +5,9 @@ import 'package:pdf_invoice/page/alici_bilgisi_ekle.dart';
 import 'package:pdf_invoice/page/anasayfa.dart';
 import 'package:pdf_invoice/page/tarih_sec.dart';
 
-final gecerliMusteri = StateProvider<Map<String, dynamic>>(
-  (ref) => {},
-);
+import '../provider/all_providers.dart';
+
+
 
 class AliciSec extends ConsumerWidget {
   AliciSec({Key? key}) : super(key: key);
@@ -15,13 +15,12 @@ class AliciSec extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var liste = ref.watch(provider);
-    List<Map<String,dynamic>> aliciListesi=[];
+    List<Map<String, dynamic>> aliciListesi = [];
     if (liste.isNotEmpty) {
       for (var item in liste) {
-      item.id == 'saticiFirma' ? null : aliciListesi.add(item.data());
+        item.id == 'saticiFirma' ? null : aliciListesi.add(item.data());
+      }
     }
-    }
-    
 
     return Scaffold(
       appBar: AppBar(
@@ -43,10 +42,10 @@ class AliciSec extends ConsumerWidget {
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
+                    children: const [
                       Icon(
                         Icons.add_circle_outline_rounded,
-                        color: Colors.orange,
+                        color: Colors.deepOrange,
                         size: 30,
                       ),
                       Text('Müşteri Ekle')
