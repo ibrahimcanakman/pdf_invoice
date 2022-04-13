@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pdf_invoice/page/anasayfa.dart';
 
 import '../provider/all_providers.dart';
 
+// ignore: must_be_immutable
 class AliciBilgisiEkle extends ConsumerWidget {
   AliciBilgisiEkle({Key? key}) : super(key: key);
 
@@ -13,7 +13,7 @@ class AliciBilgisiEkle extends ConsumerWidget {
   TextEditingController telefonController = TextEditingController();
   TextEditingController emailController = TextEditingController();
 
-  FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,7 +26,7 @@ class AliciBilgisiEkle extends ConsumerWidget {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text('Alıcı Bilgisi Ekleme'),
+        title: const Text('Alıcı Bilgisi Ekleme'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -35,7 +35,7 @@ class AliciBilgisiEkle extends ConsumerWidget {
             TextFormField(
               controller: adiController,
               decoration: InputDecoration(
-                  label: Text('Müşteri Adı:'),
+                  label: const Text('Müşteri Adı:'),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20))),
             ),
@@ -46,7 +46,7 @@ class AliciBilgisiEkle extends ConsumerWidget {
               controller: adresiController,
               maxLines: 5,
               decoration: InputDecoration(
-                  label: Text('Adresi:'),
+                  label: const Text('Adresi:'),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20))),
             ),
@@ -56,7 +56,7 @@ class AliciBilgisiEkle extends ConsumerWidget {
             TextFormField(
               controller: telefonController,
               decoration: InputDecoration(
-                  label: Text('Telefon:'),
+                  label: const Text('Telefon:'),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20))),
             ),
@@ -66,7 +66,7 @@ class AliciBilgisiEkle extends ConsumerWidget {
             TextFormField(
               controller: emailController,
               decoration: InputDecoration(
-                  label: Text('E-Mail:'),
+                  label: const Text('E-Mail:'),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20))),
             ),
@@ -83,7 +83,7 @@ class AliciBilgisiEkle extends ConsumerWidget {
                             content: Padding(
                           padding: EdgeInsets.only(
                               bottom: MediaQuery.of(context).viewInsets.bottom),
-                          child: Text('Alanlar boş bırakılamaz'),
+                          child: const Text('Alanlar boş bırakılamaz'),
                         )));
                       } else {
                         Map<String, dynamic> eklenecakMap = {
@@ -97,12 +97,28 @@ class AliciBilgisiEkle extends ConsumerWidget {
                               .collection(ref.watch(saticiAdi))
                               .doc(adiController.text)
                               .set(eklenecakMap);
-                          var gelenBilgi =
-                              await _firestore.collection(ref.watch(saticiAdi)).get();
+                          var gelenBilgi = await _firestore
+                              .collection(ref.watch(saticiAdi))
+                              .get();
 
                           ref
                               .read(provider.notifier)
                               .update((state) => gelenBilgi.docs);
+                          var liste = ref.watch(provider);
+                          List<Map<String, dynamic>> aliciListesi = [];
+
+                          if (liste.isNotEmpty) {
+                            for (var item in liste) {
+                              item.id == 'saticiFirma'
+                                  ? null
+                                  : aliciListesi.add(item.data());
+                            }
+                            Future(
+                              () => ref
+                                  .read(aliciListesiProvider.notifier)
+                                  .update((state) => aliciListesi),
+                            );
+                          }
                           Navigator.pop(context);
                         } catch (e) {
                           showDialog<void>(
@@ -127,7 +143,7 @@ class AliciBilgisiEkle extends ConsumerWidget {
                         }
                       }
                     },
-                    child: Text('KAYDET')))
+                    child: const Text('KAYDET')))
           ],
         ),
       ),

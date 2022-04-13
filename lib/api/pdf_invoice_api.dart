@@ -10,6 +10,25 @@ import '../model/supplier.dart';
 import '../utils.dart';
 
 class PdfSayfaFormati {
+  static Future<Document> documentGenerate(Invoice invoice, String tarih, String faturaNo, Map bankaBilgileri) async {
+    final pdf = Document();
+
+    pdf.addPage(MultiPage(
+      build: (context) => [
+        buildHeader(invoice, tarih, faturaNo),
+        SizedBox(height: 2 * PdfPageFormat.cm),
+        buildDescription(invoice),
+        buildInvoice(invoice),
+        Divider(),
+        buildTotal(invoice),
+      ],
+      footer: (context) => buildFooter(invoice, bankaBilgileri),
+    ));
+
+    PdfApi.saveDocument(name: '$faturaNo.pdf', pdf: pdf);
+    return pdf;
+  }
+
   static Future<File> generate(Invoice invoice, String tarih, String faturaNo, Map bankaBilgileri) async {
     final pdf = Document();
 
@@ -25,7 +44,7 @@ class PdfSayfaFormati {
       footer: (context) => buildFooter(invoice, bankaBilgileri),
     ));
 
-    return PdfApi.saveDocument(name: 'my_invoice.pdf', pdf: pdf);
+    return PdfApi.saveDocument(name: '$faturaNo.pdf', pdf: pdf);
   }
 
   static Widget buildHeader(Invoice invoice, String tarih, String faturaNo) => Column(

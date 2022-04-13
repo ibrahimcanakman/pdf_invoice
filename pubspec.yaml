@@ -50,6 +50,8 @@ dependencies:
   firebase_core: ^1.13.1
   cloud_firestore: ^3.1.10
   sqflite: ^2.0.2
+  flutter_email_sender: ^5.1.0
+  mailer: ^5.1.0
 
 dev_dependencies:
   flutter_test:

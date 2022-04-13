@@ -59,3 +59,15 @@ final toplamDegerleriProvider = StateProvider<Map<String, dynamic>>(
 
 //faturalarım sayfasında radio değeri tutan provider
 final radioProvider = StateProvider<int?>((ref) => null,);
+
+//fatura gönderirken seçilen faturanın dosya yolunu tutan provider
+final filePathProvider = StateProvider<String>((ref) => '',);
+
+//alıcı seç sayfasındaki bottomnavbar görünürlüğü
+final aliciSecBottomNavBarProvider = StateProvider<bool>((ref) => false,);
+
+//alıcı seç sayfasındaki listtile uzun basılınca seçilen müşteri bilgileri
+final aliciSecSeciliMusteriProvider = StateProvider<Map<String,dynamic>?>((ref) => null,);
+
+//alici seç sayfasındaki alıcı listesini tutan provider
+final aliciListesiProvider = StateProvider<List<Map<String, dynamic>>>((ref) => [],);

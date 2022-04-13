@@ -303,6 +303,19 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
                           ref
                               .read(provider.notifier)
                               .update((state) => gelenBilgi.docs);
+                              var liste = ref.watch(provider);
+                              List<Map<String, dynamic>> aliciListesi = [];
+    
+    if (liste.isNotEmpty) {
+      for (var item in liste) {
+        item.id == 'saticiFirma' ? null : aliciListesi.add(item.data());
+      }
+      Future(
+        () => ref
+            .read(aliciListesiProvider.notifier)
+            .update((state) => aliciListesi),
+      );
+    }
                           Navigator.push(
                               context,
                               MaterialPageRoute(
