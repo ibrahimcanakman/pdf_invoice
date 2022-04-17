@@ -18,6 +18,7 @@ final aciklamaProvider = StateProvider<String?>(
   (ref) => null,
 );
 
+// ignore: must_be_immutable
 class HomePage extends ConsumerWidget {
   HomePage({Key? key}) : super(key: key);
   TextEditingController saticiFirmaController = TextEditingController();
@@ -30,7 +31,7 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Generate Invoice'),
+        title: const Text('Generate Invoice'),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -41,7 +42,7 @@ class HomePage extends ConsumerWidget {
                 child: TextFormField(
               controller: saticiFirmaController,
               decoration: InputDecoration(
-                  label: Text('Satıcı Firma'),
+                  label: const Text('Satıcı Firma'),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15))),
             )),
@@ -49,7 +50,7 @@ class HomePage extends ConsumerWidget {
                 child: TextFormField(
               controller: saticiAdresController,
               decoration: InputDecoration(
-                  label: Text('Satıcı Firma Adres'),
+                  label: const Text('Satıcı Firma Adres'),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15))),
             )),
@@ -57,7 +58,7 @@ class HomePage extends ConsumerWidget {
                 child: TextFormField(
               controller: aliciFirmaController,
               decoration: InputDecoration(
-                  label: Text('Alıcı Firma'),
+                  label: const Text('Alıcı Firma'),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15))),
             )),
@@ -65,7 +66,7 @@ class HomePage extends ConsumerWidget {
                 child: TextFormField(
               controller: aliciAdresController,
               decoration: InputDecoration(
-                  label: Text('Alıcı Firma Adres'),
+                  label: const Text('Alıcı Firma Adres'),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15))),
             )),
@@ -73,7 +74,7 @@ class HomePage extends ConsumerWidget {
                 child: TextFormField(
               controller: aciklamaController,
               decoration: InputDecoration(
-                  label: Text('Açıklama (opsiyonel)'),
+                  label: const Text('Açıklama (opsiyonel)'),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15))),
             )),
@@ -81,24 +82,24 @@ class HomePage extends ConsumerWidget {
                 onPressed: () {
                   ref
                       .read(saticiFirmaProvider.notifier)
-                      .update((state) => saticiFirmaController.text);
+                      .update((state) => saticiFirmaController.text.trim());
                   ref
                       .read(saticiAdresProvider.notifier)
-                      .update((state) => saticiAdresController.text);
+                      .update((state) => saticiAdresController.text.trim());
                   ref
                       .read(aliciFirmaProvider.notifier)
-                      .update((state) => aliciFirmaController.text);
+                      .update((state) => aliciFirmaController.text.trim());
                   ref
                       .read(aliciAdresProvider.notifier)
-                      .update((state) => aliciAdresController.text);
+                      .update((state) => aliciAdresController.text.trim());
                   ref
                       .read(aciklamaProvider.notifier)
-                      .update((state) => aciklamaController.text);
+                      .update((state) => aciklamaController.text.trim());
                   Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => DescriptionAddPage(),
+                    builder: (context) => const DescriptionAddPage(),
                   ));
                 },
-                child: Text('Ürün Ekle'))
+                child: const Text('Ürün Ekle'))
           ],
         ),
       ),

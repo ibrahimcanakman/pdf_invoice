@@ -10,7 +10,8 @@ import '../model/supplier.dart';
 import '../utils.dart';
 
 class PdfSayfaFormati {
-  static Future<Document> documentGenerate(Invoice invoice, String tarih, String faturaNo, Map bankaBilgileri) async {
+  static Future<Document> documentGenerate(Invoice invoice, String tarih,
+      String faturaNo, Map bankaBilgileri) async {
     final pdf = Document();
 
     pdf.addPage(MultiPage(
@@ -29,7 +30,8 @@ class PdfSayfaFormati {
     return pdf;
   }
 
-  static Future<File> generate(Invoice invoice, String tarih, String faturaNo, Map bankaBilgileri) async {
+  static Future<File> generate(Invoice invoice, String tarih, String faturaNo,
+      Map bankaBilgileri) async {
     final pdf = Document();
 
     pdf.addPage(MultiPage(
@@ -47,7 +49,8 @@ class PdfSayfaFormati {
     return PdfApi.saveDocument(name: '$faturaNo.pdf', pdf: pdf);
   }
 
-  static Widget buildHeader(Invoice invoice, String tarih, String faturaNo) => Column(
+  static Widget buildHeader(Invoice invoice, String tarih, String faturaNo) =>
+      Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           SizedBox(height: 1 * PdfPageFormat.cm),
@@ -66,16 +69,26 @@ class PdfSayfaFormati {
       );
 
   static Widget buildCustomerAddress(Customer customer) => Container(
-      width: 60 * PdfPageFormat.mm,
+      width: 100 * PdfPageFormat.mm,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(customer.name, style: TextStyle(fontWeight: FontWeight.bold)),
-          Text(customer.address),
+          SizedBox(
+            width: 60 * PdfPageFormat.mm,
+            child: Text(customer.name,
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          SizedBox(
+            width: 60 * PdfPageFormat.mm,
+            child: Text(customer.address),
+          ),
+          Text(customer.email),
+          Text(customer.phone),
         ],
       ));
 
-  static Widget buildInvoiceInfo(InvoiceInfo info, String tarih, String faturaNo) {
+  static Widget buildInvoiceInfo(
+      InvoiceInfo info, String tarih, String faturaNo) {
     //final paymentTerms = '${info.dueDate.difference(info.date).inDays} days';
     final titles = <String>[
       'Invoice Number:',
@@ -84,7 +97,7 @@ class PdfSayfaFormati {
       //'Due Date:'
     ];
     final data = <String>[
-      /* '${tarih.year}${tarih.month.toString().length == 1 ? '0${tarih.month}' : '${tarih.month}'}${tarih.day.toString().length == 1 ? '0${tarih.day}' : '${tarih.day}'}' */faturaNo,//faturaNo
+      /* '${tarih.year}${tarih.month.toString().length == 1 ? '0${tarih.month}' : '${tarih.month}'}${tarih.day.toString().length == 1 ? '0${tarih.day}' : '${tarih.day}'}' */ faturaNo, //faturaNo
       tarih, //tarih yazılacak
       //paymentTerms,
       //Utils.formatDate(info.dueDate),
@@ -119,6 +132,7 @@ class PdfSayfaFormati {
           SizedBox(height: 0.8 * PdfPageFormat.cm),
         ],
       );
+
   static Widget buildTitle() => Container(
       width: 59 * PdfPageFormat.mm,
       child: Column(
@@ -136,20 +150,12 @@ class PdfSayfaFormati {
       ));
 
   static Widget buildInvoice(Invoice invoice) {
-    final headers = [
-      'Description',
-      //'Date',
-      'Quantity',
-      'Unit Price',
-      'VAT',
-      'Total'
-    ];
+    final headers = ['Description', 'Quantity', 'Unit Price', 'VAT', 'Total'];
     final data = invoice.items.map((item) {
       final total = item.unitPrice * item.quantity;
 
       return [
         item.description,
-        //Utils.formatDate(item.date),
         '${item.quantity}',
         '\£ ${item.unitPrice}',
         '${item.vat} %',
@@ -179,8 +185,12 @@ class PdfSayfaFormati {
     final netTotal = invoice.items
         .map((item) => item.unitPrice * item.quantity)
         .reduce((item1, item2) => item1 + item2);
-    final vatPercent = invoice.items.first.vat;
-    final vat = netTotal * (vatPercent / 100);
+    final vatPercent = invoice.items.first
+        .vat; //burası pdf halinde total kdv değerini yazan ve hsaplayan kısım. DÜZENLENECEK...
+    //final vat = netTotal * (vatPercent / 100);
+    final vat = invoice.items
+        .map((item) => (item.unitPrice * item.quantity * item.vat / 100))
+        .reduce((item1, item2) => item1 + item2);
     final total = netTotal + vat;
 
     return Container(
@@ -200,7 +210,7 @@ class PdfSayfaFormati {
                   unite: true,
                 ),
                 buildText(
-                  title: 'Vat ${vatPercent} %',
+                  title: 'Vat $vatPercent %',
                   value: Utils.formatPrice(vat),
                   unite: true,
                 ),
@@ -236,11 +246,16 @@ class PdfSayfaFormati {
           //Sort Code
           //Account Number
           Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-            buildSimpleText(title: 'Account Name__: ', value: bankaBilgileri['accountName']),
+            buildSimpleText(
+                title: 'Account Name__: ',
+                value: bankaBilgileri['accountName']),
             SizedBox(height: 1 * PdfPageFormat.mm),
-            buildSimpleText(title: 'Sort Code______: ', value: bankaBilgileri['sortCode']),
+            buildSimpleText(
+                title: 'Sort Code______: ', value: bankaBilgileri['sortCode']),
             SizedBox(height: 1 * PdfPageFormat.mm),
-            buildSimpleText(title: 'Account Number: ', value: bankaBilgileri['accountNumber']),
+            buildSimpleText(
+                title: 'Account Number: ',
+                value: bankaBilgileri['accountNumber']),
           ])
           /* SizedBox(height: 1 * PdfPageFormat.mm),
           buildSimpleText(title: 'Paypal', value: invoice.supplier.paymentInfo), */

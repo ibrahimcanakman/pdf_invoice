@@ -14,7 +14,7 @@ class TarihSec extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Tarih Seç'),
+        title: const Text('Tarih Seç'),
       ),
       body: Center(
         child: ElevatedButton(
@@ -31,10 +31,10 @@ class TarihSec extends ConsumerWidget {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => DescriptionAddPage(),
+                    builder: (context) => const DescriptionAddPage(),
                   ));
             },
-            child: Text('Tarih Seç')),
+            child: const Text('Tarih Seç')),
       ),
     );
   }

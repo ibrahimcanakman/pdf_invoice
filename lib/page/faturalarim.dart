@@ -2,23 +2,22 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mailer/mailer.dart';
-import 'package:mailer/smtp_server/gmail.dart';
+import 'package:mailer/smtp_server.dart';
+import 'package:mailer/smtp_server/hotmail.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pdf_invoice/database_helper.dart';
 import 'package:pdf_invoice/page/anasayfa.dart';
 import 'package:pdf_invoice/page/description_add_page.dart';
 
 import '../api/pdf_api.dart';
 import '../api/pdf_invoice_api.dart';
+import '../constants/constant.dart';
 import '../model/customer.dart';
 import '../model/invoice.dart';
 import '../model/supplier.dart';
 import '../provider/all_providers.dart';
 import 'alici_sec.dart';
-import 'home_page.dart';
 
 class Faturalarim extends ConsumerStatefulWidget {
   const Faturalarim({Key? key}) : super(key: key);
@@ -28,30 +27,31 @@ class Faturalarim extends ConsumerStatefulWidget {
 }
 
 class _FaturalarimState extends ConsumerState<Faturalarim> {
-  final _saticiKey = GlobalKey<FormState>();
-  TextEditingController _saticiAdiController = TextEditingController();
-  TextEditingController _saticiAdresiController = TextEditingController();
-  TextEditingController _saticiTelefonController = TextEditingController();
-  TextEditingController _saticiEmailController = TextEditingController();
-  TextEditingController _bankaAccountNameController = TextEditingController();
-  TextEditingController _bankaSortCodeController = TextEditingController();
-  TextEditingController _bankaAccountNumberController = TextEditingController();
-  FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  DatabaseHelper _databaseHelper = DatabaseHelper();
+  /* final _saticiKey = GlobalKey<FormState>();
+  final TextEditingController _saticiAdiController = TextEditingController();
+  final TextEditingController _saticiAdresiController = TextEditingController();
+  final TextEditingController _saticiTelefonController = TextEditingController();
+  final TextEditingController _saticiEmailController = TextEditingController();
+  final TextEditingController _bankaAccountNameController = TextEditingController();
+  final TextEditingController _bankaSortCodeController = TextEditingController();
+  final TextEditingController _bankaAccountNumberController = TextEditingController(); */
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  //DatabaseHelper _databaseHelper = DatabaseHelper();
+
+  //String saticiFirmaAdi = '';
 
   @override
   void initState() {
     faturalariGetir();
+    mailBilgisiGetir();
     super.initState();
   }
 
   faturalariGetir() async {
-    var value = await _databaseHelper.getir();
-    ref
-        .read(saticiAdi.notifier)
-        .update((state) => value.first['firmaAdi'].toString());
+    //var value = await _databaseHelper.getir();
+    ref.read(saticiAdi.notifier).update((state) => auth.currentUser!.email!);
     var gelenFaturalarSS = await _firestore
-        .collection(value.first['firmaAdi'].toString())
+        .collection(auth.currentUser!.email!)
         .doc('saticiFirma')
         .collection('faturalar')
         .get();
@@ -63,29 +63,35 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
         .update((state) => gelenFaturalarListesi);
   }
 
+  /* saticiFirmaGetir() async {
+    var saticiFirma = await _databaseHelper.getir();
+    saticiFirmaAdi = saticiFirma.first['firmaAdi'].toString();
+  } */
+
   @override
   Widget build(BuildContext context) {
     //faturalariGetir();
+    //saticiFirmaGetir();
 
     return WillPopScope(
       onWillPop: () {
         Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
-              builder: (context) => AnaSayfa(),
+              builder: (context) => const AnaSayfa(),
             ),
             (route) => false);
-        ref.read(radioProvider.notifier).update((state) => null);
+        ref.read(radioFaturaProvider.notifier).update((state) => null);
         return Future.value(true);
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Faturalarım'),
+          title: const Text('Faturalarım'),
         ),
 
         //bottom nav bar
         bottomNavigationBar: Visibility(
-          visible: ref.watch(radioProvider) != null,
+          visible: ref.watch(radioFaturaProvider) != null,
           child: BottomNavigationBar(
               showUnselectedLabels: true,
               selectedItemColor: Colors.deepOrange,
@@ -94,7 +100,7 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
               unselectedFontSize: 12,
               currentIndex: 0,
               onTap: (index) {
-                if (ref.watch(radioProvider) != null) {
+                if (ref.watch(radioFaturaProvider) != null) {
                   switch (index) {
                     case 0:
                       pdfGoruntule();
@@ -105,7 +111,8 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
                       debugPrint('1 tıklandı');
                       break;
                     case 2:
-                      faturaGonder();
+                      emailGonder();
+                      //faturaGonder();
                       debugPrint('2 tıklandı');
                       break;
                     case 3:
@@ -118,7 +125,7 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
                   ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Fatura seçimi yapın...')));
                 }
-                ref.read(radioProvider.notifier).update((state) => null);
+                ref.read(radioFaturaProvider.notifier).update((state) => null);
               },
               items: const [
                 BottomNavigationBarItem(
@@ -131,343 +138,317 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
                     label: 'Fatura Sil', icon: Icon(Icons.delete))
               ]),
         ),
-        body: ref.watch(faturalarProvider).isEmpty
+        body: /* ref.watch(faturalarProvider).isEmpty
             ? const Center(
-                child: CircularProgressIndicator(),
+                child: Text('Kayıtlı Faturanız Yok...'),
               )
-            : Column(
-                children: [
-                  //yeni fatura ekleme butonu
-                  GestureDetector(
-                    onTap: () {
-                      Future(
-                        () async {
-                          var value = await _databaseHelper.getir();
-                          return value;
-                        },
-                      ).then((value) async {
-                        if (value.isEmpty) {
-                          showDialog<void>(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: const Text('Kayıt Ol'),
-                                content: Form(
-                                    key: _saticiKey,
-                                    child: SingleChildScrollView(
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                              'İlk girişiniz olduğu için faturalarda kullanılmak üzere firmanızın bilgilerini bir kereliğine kaydetmelisiniz ! '),
-                                          SizedBox(
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height /
-                                                50,
-                                          ),
-                                          TextFormField(
-                                            controller: _saticiAdiController,
-                                            validator: (value) {
-                                              if (value!.trim().isEmpty) {
-                                                return 'Boş bırakılamaz...';
-                                              } else {
-                                                return null;
-                                              }
-                                            },
-                                            decoration: InputDecoration(
-                                                label: Text('Firma Adı'),
-                                                border: OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15))),
-                                          ),
-                                          SizedBox(
-                                              height: MediaQuery.of(context)
-                                                      .size
-                                                      .height /
-                                                  50),
-                                          TextFormField(
-                                            controller: _saticiAdresiController,
-                                            validator: (value) {
-                                              if (value!.trim().isEmpty) {
-                                                return 'Boş bırakılamaz...';
-                                              } else {
-                                                return null;
-                                              }
-                                            },
-                                            decoration: InputDecoration(
-                                                label: Text('Firma Adresi'),
-                                                border: OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15))),
-                                          ),
-                                          SizedBox(
-                                              height: MediaQuery.of(context)
-                                                      .size
-                                                      .height /
-                                                  50),
-                                          TextFormField(
-                                            controller:
-                                                _saticiTelefonController,
-                                            validator: (value) {
-                                              if (value!.trim().isEmpty) {
-                                                return 'Boş bırakılamaz...';
-                                              } else {
-                                                return null;
-                                              }
-                                            },
-                                            decoration: InputDecoration(
-                                                label: Text('Telefon'),
-                                                border: OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15))),
-                                          ),
-                                          SizedBox(
-                                              height: MediaQuery.of(context)
-                                                      .size
-                                                      .height /
-                                                  50),
-                                          TextFormField(
-                                            controller: _saticiEmailController,
-                                            validator: (value) {
-                                              if (value!.trim().isEmpty) {
-                                                return 'Boş bırakılamaz...';
-                                              } else {
-                                                return null;
-                                              }
-                                            },
-                                            decoration: InputDecoration(
-                                                label: Text('E-Mail'),
-                                                border: OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15))),
-                                          ),
-                                          SizedBox(
-                                              height: MediaQuery.of(context)
-                                                      .size
-                                                      .height /
-                                                  50),
-                                          TextFormField(
-                                            controller:
-                                                _bankaAccountNameController,
-                                            validator: (value) {
-                                              if (value!.trim().isEmpty) {
-                                                return 'Boş bırakılamaz...';
-                                              } else {
-                                                return null;
-                                              }
-                                            },
-                                            decoration: InputDecoration(
-                                                label:
-                                                    Text('Bank Account Name'),
-                                                border: OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15))),
-                                          ),
-                                          SizedBox(
-                                              height: MediaQuery.of(context)
-                                                      .size
-                                                      .height /
-                                                  50),
-                                          TextFormField(
-                                            controller:
-                                                _bankaSortCodeController,
-                                            validator: (value) {
-                                              if (value!.trim().isEmpty) {
-                                                return 'Boş bırakılamaz...';
-                                              } else {
-                                                return null;
-                                              }
-                                            },
-                                            decoration: InputDecoration(
-                                                label: Text('Bank Sort Code'),
-                                                border: OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15))),
-                                          ),
-                                          SizedBox(
-                                              height: MediaQuery.of(context)
-                                                      .size
-                                                      .height /
-                                                  50),
-                                          TextFormField(
-                                            controller:
-                                                _bankaAccountNumberController,
-                                            validator: (value) {
-                                              if (value!.trim().isEmpty) {
-                                                return 'Boş bırakılamaz...';
-                                              } else {
-                                                return null;
-                                              }
-                                            },
-                                            decoration: InputDecoration(
-                                                label:
-                                                    Text('Bank Account Number'),
-                                                border: OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15))),
-                                          ),
-                                        ],
-                                      ),
-                                    )),
-                                actions: <Widget>[
-                                  TextButton(
-                                    child: const Text('Vazgeç'),
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
+            :  */
+            Column(
+          children: [
+            //yeni fatura ekleme butonu
+            GestureDetector(
+              onTap: () async {
+                /* if (saticiFirmaAdi == '') {
+                  showDialog<void>(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Kayıt Ol'),
+                        content: Form(
+                            key: _saticiKey,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text(
+                                      'İlk girişiniz olduğu için faturalarda kullanılmak üzere firmanızın bilgilerini bir kereliğine kaydetmelisiniz ! '),
+                                  SizedBox(
+                                    height:
+                                        MediaQuery.of(context).size.height / 50,
                                   ),
-                                  ElevatedButton(
-                                      onPressed: () async {
-                                        if (_saticiKey.currentState!
-                                            .validate()) {
-                                          Map<String, dynamic> firmaBilgileri =
-                                              {
-                                            'adi': _saticiAdiController.text,
-                                            'adresi':
-                                                _saticiAdresiController.text,
-                                            'email':
-                                                _saticiEmailController.text,
-                                            'telefon':
-                                                _saticiTelefonController.text,
-                                            'bankaAccountName':
-                                                _bankaAccountNameController
-                                                    .text,
-                                            'bankaSortCode':
-                                                _bankaSortCodeController.text,
-                                            'bankaAccountNumber':
-                                                _bankaAccountNumberController
-                                                    .text
-                                          };
-                                          await _databaseHelper.kaydet(
-                                              _saticiAdiController.text);
-                                          Future(
-                                            () {
-                                              _firestore
-                                                  .collection(
-                                                      _saticiAdiController.text)
-                                                  .doc('saticiFirma')
-                                                  .set(firmaBilgileri);
-                                            },
-                                          ).then((value) {
-                                            ref.read(saticiAdi.notifier).update(
-                                                (state) =>
-                                                    _saticiAdiController.text);
-                                            Navigator.pop(context);
-                                          });
-                                        } else {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(SnackBar(
-                                                  content: Padding(
-                                            padding: EdgeInsets.only(
-                                              bottom: MediaQuery.of(context)
-                                                  .viewInsets
-                                                  .bottom,
-                                            ),
-                                            child:
-                                                Text('Eksik bilgi girdiniz...'),
-                                          )));
-                                        }
-                                      },
-                                      child: Text('KAYDET'))
+                                  TextFormField(
+                                    controller: _saticiAdiController,
+                                    validator: (value) {
+                                      if (value!.trim().isEmpty) {
+                                        return 'Boş bırakılamaz...';
+                                      } else {
+                                        return null;
+                                      }
+                                    },
+                                    decoration: InputDecoration(
+                                        label: Text('Firma Adı'),
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(15))),
+                                  ),
+                                  SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height /
+                                              50),
+                                  TextFormField(
+                                    controller: _saticiAdresiController,
+                                    validator: (value) {
+                                      if (value!.trim().isEmpty) {
+                                        return 'Boş bırakılamaz...';
+                                      } else {
+                                        return null;
+                                      }
+                                    },
+                                    decoration: InputDecoration(
+                                        label: Text('Firma Adresi'),
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(15))),
+                                  ),
+                                  SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height /
+                                              50),
+                                  TextFormField(
+                                    controller: _saticiTelefonController,
+                                    validator: (value) {
+                                      if (value!.trim().isEmpty) {
+                                        return 'Boş bırakılamaz...';
+                                      } else {
+                                        return null;
+                                      }
+                                    },
+                                    decoration: InputDecoration(
+                                        label: Text('Telefon'),
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(15))),
+                                  ),
+                                  SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height /
+                                              50),
+                                  TextFormField(
+                                    controller: _saticiEmailController,
+                                    validator: (value) {
+                                      if (value!.trim().isEmpty) {
+                                        return 'Boş bırakılamaz...';
+                                      } else {
+                                        return null;
+                                      }
+                                    },
+                                    decoration: InputDecoration(
+                                        label: Text('E-Mail'),
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(15))),
+                                  ),
+                                  SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height /
+                                              50),
+                                  TextFormField(
+                                    controller: _bankaAccountNameController,
+                                    validator: (value) {
+                                      if (value!.trim().isEmpty) {
+                                        return 'Boş bırakılamaz...';
+                                      } else {
+                                        return null;
+                                      }
+                                    },
+                                    decoration: InputDecoration(
+                                        label: Text('Bank Account Name'),
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(15))),
+                                  ),
+                                  SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height /
+                                              50),
+                                  TextFormField(
+                                    controller: _bankaSortCodeController,
+                                    validator: (value) {
+                                      if (value!.trim().isEmpty) {
+                                        return 'Boş bırakılamaz...';
+                                      } else {
+                                        return null;
+                                      }
+                                    },
+                                    decoration: InputDecoration(
+                                        label: Text('Bank Sort Code'),
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(15))),
+                                  ),
+                                  SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height /
+                                              50),
+                                  TextFormField(
+                                    controller: _bankaAccountNumberController,
+                                    validator: (value) {
+                                      if (value!.trim().isEmpty) {
+                                        return 'Boş bırakılamaz...';
+                                      } else {
+                                        return null;
+                                      }
+                                    },
+                                    decoration: InputDecoration(
+                                        label: Text('Bank Account Number'),
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(15))),
+                                  ),
                                 ],
-                              );
-                            },
-                          );
-                        } else {
-                          ref.read(saticiAdi.notifier).update(
-                              (state) => value.first['firmaAdi'].toString());
-                          var gelenBilgi = await _firestore
-                              .collection(value.first['firmaAdi'].toString())
-                              .get();
-
-                          ref
-                              .read(provider.notifier)
-                              .update((state) => gelenBilgi.docs);
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => AliciSec(),
-                              ));
-                        }
-                      });
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: const [
-                        Icon(
-                          Icons.add_circle,
-                          color: Colors.deepOrange,
-                          size: 30,
-                        ),
-                        Text(
-                          'Yeni Fatura Ekle',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 18),
-                        )
-                      ],
-                    ),
-                  ),
-
-                  //faturaların olduğu liste
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: ref.watch(faturalarProvider).length,
-                      itemBuilder: (context, index) {
-                        return Column(
-                          children: [
-                            ListTile(
-                              onTap: () {
-                                ref
-                                    .read(radioProvider.notifier)
-                                    .update((state) => index);
-                                ref.read(seciliFaturaProvider.notifier).update(
-                                    (state) => ref
-                                        .watch(faturalarProvider)[index]
-                                        .data());
-                              },
-                              leading: Radio(
-                                value: index,
-                                groupValue: ref.watch(radioProvider),
-                                onChanged: (int? yeniDeger) {
-                                  ref
-                                      .read(radioProvider.notifier)
-                                      .update((state) => index);
-                                  ref
-                                      .read(seciliFaturaProvider.notifier)
-                                      .update((state) => ref
-                                          .watch(faturalarProvider)[index]
-                                          .data());
-                                },
                               ),
-                              title: Text(ref
-                                  .watch(faturalarProvider)[index]
-                                  .data()['aliciAdi']),
-                              subtitle: Text(ref
-                                  .watch(faturalarProvider)[index]
-                                  .data()['faturaTarihi']),
-                              trailing: Text(
-                                  '£ ${ref.watch(faturalarProvider)[index].data()['faturaToplami']}'),
-                            ),
-                            const Divider(
-                              height: 0,
-                              thickness: 1,
-                            )
-                          ],
-                        );
-                      },
-                    ),
+                            )),
+                        actions: <Widget>[
+                          TextButton(
+                            child: const Text('Vazgeç'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          ElevatedButton(
+                              onPressed: () async {
+                                if (_saticiKey.currentState!.validate()) {
+                                  Map<String, dynamic> firmaBilgileri = {
+                                    'adi': _saticiAdiController.text,
+                                    'adresi': _saticiAdresiController.text,
+                                    'email': _saticiEmailController.text,
+                                    'telefon': _saticiTelefonController.text,
+                                    'bankaAccountName':
+                                        _bankaAccountNameController.text,
+                                    'bankaSortCode':
+                                        _bankaSortCodeController.text,
+                                    'bankaAccountNumber':
+                                        _bankaAccountNumberController.text
+                                  };
+                                  await _databaseHelper
+                                      .kaydet(_saticiAdiController.text);
+                                  Future(
+                                    () {
+                                      _firestore
+                                          .collection(_saticiAdiController.text)
+                                          .doc('saticiFirma')
+                                          .set(firmaBilgileri);
+                                    },
+                                  ).then((value) {
+                                    ref.read(saticiAdi.notifier).update(
+                                        (state) => _saticiAdiController.text);
+                                    Navigator.pop(context);
+                                  });
+                                } else {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                          content: Padding(
+                                    padding: EdgeInsets.only(
+                                      bottom: MediaQuery.of(context)
+                                          .viewInsets
+                                          .bottom,
+                                    ),
+                                    child: Text('Eksik bilgi girdiniz...'),
+                                  )));
+                                }
+                              },
+                              child: Text('KAYDET'))
+                        ],
+                      );
+                    },
+                  );
+                }  */
+                //else {
+                ref
+                    .read(saticiAdi.notifier)
+                    .update((state) => auth.currentUser!.email!);
+                var gelenBilgi =
+                    await _firestore.collection(auth.currentUser!.email!).get();
+
+                ref.read(provider.notifier).update((state) => gelenBilgi.docs);
+                var liste = ref.watch(provider);
+                List<Map<String, dynamic>> aliciListesi = [];
+
+                if (liste.isNotEmpty) {
+                  for (var item in liste) {
+                    item.id == 'saticiFirma'
+                        ? null
+                        : aliciListesi.add(item.data());
+                  }
+                  ref
+                      .read(aliciListesiProvider.notifier)
+                      .update((state) => aliciListesi);
+                }
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AliciSec(),
+                    ));
+                //}
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.add_circle,
+                    color: Colors.deepOrange,
+                    size: 40,
                   ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 20,
+                  ),
+                  const Text(
+                    'Yeni Fatura Ekle',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                  )
                 ],
               ),
+            ),
+
+            //faturaların olduğu liste
+            Expanded(
+              child: ListView.builder(
+                itemCount: ref.watch(faturalarProvider).length,
+                itemBuilder: (context, index) {
+                  return Column(
+                    children: [
+                      ListTile(
+                        onTap: () {
+                          ref
+                              .read(radioFaturaProvider.notifier)
+                              .update((state) => index);
+                          ref.read(seciliFaturaProvider.notifier).update(
+                              (state) =>
+                                  ref.watch(faturalarProvider)[index].data());
+                        },
+                        leading: Radio(
+                          value: index,
+                          groupValue: ref.watch(radioFaturaProvider),
+                          onChanged: (int? yeniDeger) {
+                            ref
+                                .read(radioFaturaProvider.notifier)
+                                .update((state) => index);
+                            ref.read(seciliFaturaProvider.notifier).update(
+                                (state) =>
+                                    ref.watch(faturalarProvider)[index].data());
+                          },
+                        ),
+                        title: Text(ref
+                            .watch(faturalarProvider)[index]
+                            .data()['aliciAdi']),
+                        subtitle: Text(ref
+                            .watch(faturalarProvider)[index]
+                            .data()['faturaTarihi']),
+                        trailing: Text(
+                            '£ ${ref.watch(faturalarProvider)[index].data()['faturaToplami']}'),
+                      ),
+                      const Divider(
+                        height: 0,
+                        thickness: 1,
+                      )
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -493,6 +474,8 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
       customer: Customer(
         name: ref.watch(seciliFaturaProvider)['aliciAdi'],
         address: ref.watch(seciliFaturaProvider)['aliciAdresi'],
+        email: ref.watch(seciliFaturaProvider)['aliciEmail'],
+        phone: ref.watch(seciliFaturaProvider)['aliciTelefon'],
       ),
       info: InvoiceInfo(
         date: ref.watch(seciliFaturaProvider)['faturaTarihi'],
@@ -546,11 +529,11 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
     Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => DescriptionAddPage(),
+          builder: (context) => const DescriptionAddPage(),
         ));
   }
 
-  void faturaGonder() async {
+  /* void faturaGonder() async {
     var aliciBilgileri = await _firestore
         .collection(ref.watch(saticiAdi).toString())
         .doc(ref.watch(seciliFaturaProvider)['aliciAdi'])
@@ -668,6 +651,7 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
       );
     }
   }
+ */
 
   void faturaSil() async {
     //var value = await _databaseHelper.getir();
@@ -690,7 +674,9 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
                           .delete();
                       faturalariGetir();
                       Navigator.pop(context);
-                      ref.read(radioProvider.notifier).update((state) => null);
+                      ref
+                          .read(radioFaturaProvider.notifier)
+                          .update((state) => null);
                     },
                     child: const Text('SİL'))
               ],
@@ -698,56 +684,45 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
   }
 
   void emailGonder() async {
-    /* final appDocumentDir = await getApplicationDocumentsDirectory();
-      final filePath = appDocumentDir.path +
-          '/20220501.pdf'; */
+    var aliciBilgileri = await _firestore
+        .collection(ref.watch(saticiAdi).toString())
+        .doc(ref.watch(seciliFaturaProvider)['aliciAdi'])
+        .get();
+    var aliciMail = aliciBilgileri.data()!['email'];
 
-    bool dosyaVarMi;
+    //bool dosyaVarMi;
     try {
-      final appDocumentDir = await getApplicationDocumentsDirectory();
+      /* final appDocumentDir = await getApplicationDocumentsDirectory();
       final filePath = appDocumentDir.path +
-          '/${ref.watch(seciliFaturaProvider)['faturaNo']}.pdf';
-      final file = File(filePath);
-      dosyaVarMi = await file.exists();
-      if (dosyaVarMi) {
+          '/${ref.watch(seciliFaturaProvider)['faturaNo']}.pdf'; */
+      //final file = File(filePath);
+      //dosyaVarMi = await file.exists();
+      /* if (dosyaVarMi) {
         ref.read(filePathProvider.notifier).update((state) => filePath);
-        const token = '';
-        final smtpServer =
-            gmailRelaySaslXoauth2('ibocan351130@gmail.om', token);
+
+        final smtpServer = hotmail(ref.watch(mailBilgisiProvider)['email'],
+            ref.watch(mailBilgisiProvider)['pass']);
+
         final message = Message()
-          ..from = const Address('ibocan351130@gmail.com')
-          ..recipients = ['ibrahimcanakman@hotmail.com']
-          ..subject = 'subject'
-          ..text = 'text'
+          ..from = Address(ref.watch(mailBilgisiProvider)['email'],
+              ref.watch(mailBilgisiProvider)['name'])
+          ..recipients = [aliciMail]
+          ..subject = ref.watch(mailBilgisiProvider)['subject']
+          ..text = ref.watch(mailBilgisiProvider)['text']
           ..attachments = [FileAttachment(File(filePath))];
         try {
           final sendReport = await send(message, smtpServer);
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('Mail gönderildi')));
           print('Message sent: ' + sendReport.toString());
         } on MailerException catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text(
+                  'Mail gönderilirken hata oluştu. Daha sonra tekrar deneyin...')));
           print('Message not sent.' + e.problems.toString());
           for (var p in e.problems) {
             print('Problem: ${p.code}: ${p.msg}');
           }
-        }
-        var connection =
-            PersistentConnection(smtpServer, timeout: Duration(seconds: 15));
-        // Send multiple mails on one connection:
-        try {
-          for (var i = 0; i < 3; i++) {
-            message.subject =
-                'Test Dart Mailer library :: 😀 :: ${DateTime.now()} / $i';
-            final sendReport = await connection.send(message);
-            print('Message sent: ' + sendReport.toString());
-          }
-        } on MailerException catch (e) {
-          print('Message not sent.');
-          for (var p in e.problems) {
-            print('Problem: ${p.code}: ${p.msg}');
-          }
-        } catch (e) {
-          print('Other exception: $e');
-        } finally {
-          await connection.close();
         }
       } else {
         ref.read(filePathProvider.notifier).update((state) => '');
@@ -796,12 +771,15 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
         final filePath = appDocumentDir.path +
             '/${ref.watch(seciliFaturaProvider)['faturaNo']}.pdf';
         const token = '';
-        final smtpServer = gmailSaslXoauth2('ibocan351130@gmail.om', token);
+        final smtpServer = hotmail(ref.watch(mailBilgisiProvider)['email'],
+            ref.watch(mailBilgisiProvider)['pass']);
+
         final message = Message()
-          ..from = const Address('ibocan351130@gmail.com', 'Can Akman')
-          ..recipients.add('ibrahimcanakman@hotmail.com')
-          ..subject = 'subject'
-          ..text = 'text'
+          ..from = Address(ref.watch(mailBilgisiProvider)['email'],
+              ref.watch(mailBilgisiProvider)['name'])
+          ..recipients.add(aliciMail)
+          ..subject = ref.watch(mailBilgisiProvider)['subject']
+          ..text = ref.watch(mailBilgisiProvider)['text']
           ..attachments = [FileAttachment(File(filePath))];
         try {
           final sendReport = await send(message, smtpServer);
@@ -812,25 +790,77 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
             print('Problem: ${p.code}: ${p.msg}');
           }
         }
-        var connection =
-            PersistentConnection(smtpServer, timeout: Duration(seconds: 15));
-        // Send multiple mails on one connection:
-        try {
-          for (var i = 0; i < 3; i++) {
-            message.subject =
-                'Test Dart Mailer library :: 😀 :: ${DateTime.now()} / $i';
-            final sendReport = await connection.send(message);
-            print('Message sent: ' + sendReport.toString());
-          }
-        } on MailerException catch (e) {
-          print('Message not sent.');
-          for (var p in e.problems) {
-            print('Problem: ${p.code}: ${p.msg}');
-          }
-        } catch (e) {
-          print('Other exception: $e');
-        } finally {
-          await connection.close();
+      } */
+      ref.read(filePathProvider.notifier).update((state) => '');
+      var saticiBilgileriSS = await _firestore
+          .collection(ref.watch(saticiAdi).toString())
+          .doc('saticiFirma')
+          .get();
+      var saticiBilgileriMap = saticiBilgileriSS.data();
+
+      Map<String, dynamic> bankaBilgileri = {
+        'accountName': saticiBilgileriMap!['bankaAccountName'],
+        'sortCode': saticiBilgileriMap['bankaSortCode'],
+        'accountNumber': saticiBilgileriMap['bankaAccountNumber']
+      };
+
+      final invoice = Invoice(
+        supplier: Supplier(
+          name: saticiBilgileriMap['adi'],
+          address: saticiBilgileriMap['adresi'],
+        ),
+        customer: Customer(
+          name: ref.watch(seciliFaturaProvider)['aliciAdi'],
+          address: ref.watch(seciliFaturaProvider)['aliciAdresi'],
+          email: ref.watch(seciliFaturaProvider)['aliciEmail'],
+          phone: ref.watch(seciliFaturaProvider)['aliciTelefon'],
+        ),
+        info: InvoiceInfo(
+          date: ref.watch(seciliFaturaProvider)['faturaTarihi'],
+          description: '',
+        ),
+        items: [
+          for (var item in ref.watch(seciliFaturaProvider)['urunler'])
+            InvoiceItem(
+              description: item['urunAdi']!,
+              quantity: int.parse(item['urunMiktari']!),
+              vat: double.parse(item['urunKDV']!),
+              unitPrice: double.parse(item['urunBirimi']!),
+            ),
+        ],
+      );
+      final pdfFile = await PdfSayfaFormati.documentGenerate(
+          invoice,
+          ref.watch(seciliFaturaProvider)['faturaTarihi'],
+          ref.watch(seciliFaturaProvider)['faturaNo'],
+          bankaBilgileri);
+
+      final appDocumentDir = await getApplicationDocumentsDirectory();
+      final filePath = appDocumentDir.path +
+          '/${ref.watch(seciliFaturaProvider)['faturaNo']}.pdf';
+
+      final smtpServer = hotmail(ref.watch(mailBilgisiProvider)['email'],
+          ref.watch(mailBilgisiProvider)['pass']);
+
+      final message = Message()
+        ..from = Address(ref.watch(mailBilgisiProvider)['email'],
+            ref.watch(mailBilgisiProvider)['name'])
+        ..recipients.add(aliciMail)
+        ..subject = ref.watch(mailBilgisiProvider)['subject']
+        ..text = ref.watch(mailBilgisiProvider)['text']
+        ..attachments = [FileAttachment(File(filePath))];
+      try {
+        final sendReport = await send(message, smtpServer);
+        debugPrint('Message sent: ' + sendReport.toString());
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Mail gönderildi')));
+      } on MailerException catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text(
+                'Mail gönderilirken hata oluştu, daha sonra tekrar deneyin')));
+        debugPrint('Message not sent.');
+        for (var p in e.problems) {
+          debugPrint('Problem: ${p.code}: ${p.msg}');
         }
       }
     } catch (e) {
@@ -840,5 +870,12 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
         ),
       );
     }
+  }
+
+  void mailBilgisiGetir() async {
+    var mailBilgisiData =
+        await _firestore.collection('uygulama_mail').doc('mail').get();
+    var mailIcerik = mailBilgisiData.data();
+    ref.read(mailBilgisiProvider.notifier).update((state) => mailIcerik!);
   }
 }

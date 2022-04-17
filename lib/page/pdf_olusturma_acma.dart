@@ -10,10 +10,11 @@ import '../model/supplier.dart';
 import '../provider/all_providers.dart';
 import 'home_page.dart';
 
+// ignore: must_be_immutable
 class FaturaSayfasi extends ConsumerWidget {
   FaturaSayfasi({Key? key}) : super(key: key);
 
-  FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Map<String, dynamic> bankaBilgileri = {};
 
   @override
@@ -44,8 +45,8 @@ class FaturaSayfasi extends ConsumerWidget {
                 item.id == 'saticiFirma' ? satici = item.data() : null;
               }
 
-              final date = DateTime.now();
-              final dueDate = date.add(const Duration(days: 7));
+              //final date = DateTime.now();
+              //final dueDate = date.add(const Duration(days: 7));
 
               final invoice = Invoice(
                 supplier: Supplier(
@@ -55,6 +56,8 @@ class FaturaSayfasi extends ConsumerWidget {
                 customer: Customer(
                   name: ref.watch(gecerliMusteri)['adi'],
                   address: ref.watch(gecerliMusteri)['adresi'],
+                  email: ref.watch(gecerliMusteri)['email'],
+                  phone: ref.watch(gecerliMusteri)['telefon'],
                 ),
                 info: InvoiceInfo(
                   date: ref.watch(tarihProvider),

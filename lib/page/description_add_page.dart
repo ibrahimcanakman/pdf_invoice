@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pdf_invoice/contoller/description_controllers.dart';
+import 'package:pdf_invoice/constants/description_controllers.dart';
 import 'package:pdf_invoice/page/faturalarim.dart';
 import '../provider/all_providers.dart';
 
@@ -14,7 +14,7 @@ class DescriptionAddPage extends ConsumerStatefulWidget {
 }
 
 class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
-  FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -267,7 +267,7 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                                                       .width /
                                                   3,
                                               child: const Text(
-                                                'Vat 18 %',
+                                                'Vat %', //değişen kdv oranlarında burada yazılan da değişmeli, fakat bir faturada birden fazla farklı kdv oranı olursa nasıl olacak...
                                                 style: TextStyle(
                                                     fontWeight:
                                                         FontWeight.bold),
@@ -367,10 +367,10 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                                 urunBirimi.text.trim().isNotEmpty &&
                                 urunKDV.text.trim().isNotEmpty) {
                               var eklenenUrun = {
-                                'urunAdi': urunAdi.text,
-                                'urunMiktari': urunMiktari.text,
-                                'urunBirimi': urunBirimi.text,
-                                'urunKDV': urunKDV.text
+                                'urunAdi': urunAdi.text.trim(),
+                                'urunMiktari': urunMiktari.text.trim(),
+                                'urunBirimi': urunBirimi.text.trim(),
+                                'urunKDV': urunKDV.text.trim()
                               };
 
                               ref
@@ -414,10 +414,10 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => Faturalarim(),
+                                      builder: (context) => const Faturalarim(),
                                     ));
                                 ref
-                                    .read(radioProvider.notifier)
+                                    .read(radioFaturaProvider.notifier)
                                     .update((state) => null);
                                 /* Navigator.push(
                                     context,
@@ -498,6 +498,8 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
     Map<String, dynamic> eklenecekFatura = {
       'aliciAdi': ref.watch(gecerliMusteri)['adi'],
       'aliciAdresi': ref.watch(gecerliMusteri)['adresi'],
+      'aliciEmail': ref.watch(gecerliMusteri)['email'],
+      'aliciTelefon': ref.watch(gecerliMusteri)['telefon'],
       'faturaNo': ref.watch(faturaNoProvider),
       'faturaTarihi': ref.watch(tarihProvider),
       'faturaToplami':

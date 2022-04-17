@@ -14,6 +14,8 @@ class AliciBilgisiDuzenle extends ConsumerWidget {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     List<TextEditingController> controllerler = [
@@ -100,10 +102,10 @@ class AliciBilgisiDuzenle extends ConsumerWidget {
                           )));
                         } else {
                           Map<String, dynamic> eklenecakMap = {
-                            'adi': _adiController.text,
-                            'adresi': _adresiController.text,
-                            'telefon': _telefonController.text,
-                            'email': _emailController.text
+                            'adi': _adiController.text.trim(),
+                            'adresi': _adresiController.text.trim(),
+                            'telefon': _telefonController.text.trim(),
+                            'email': _emailController.text.trim()
                           };
                           try {
                             await _firestore
@@ -113,7 +115,7 @@ class AliciBilgisiDuzenle extends ConsumerWidget {
                                 .delete();
                             await _firestore
                                 .collection(ref.watch(saticiAdi))
-                                .doc(_adiController.text)
+                                .doc(_adiController.text.trim())
                                 .set(eklenecakMap);
                             var gelenBilgi = await _firestore
                                 .collection(ref.watch(saticiAdi))
