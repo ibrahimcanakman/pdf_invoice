@@ -52,6 +52,8 @@ class FaturaSayfasi extends ConsumerWidget {
                 supplier: Supplier(
                   name: satici['adi'],
                   address: satici['adresi'],
+                  email: satici['email'],
+                  phone: satici['phone'],
                 ),
                 customer: Customer(
                   name: ref.watch(gecerliMusteri)['adi'],

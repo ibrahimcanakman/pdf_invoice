@@ -470,6 +470,8 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
       supplier: Supplier(
         name: saticiBilgileriMap['adi'],
         address: saticiBilgileriMap['adresi'],
+        email: saticiBilgileriMap['email'],
+        phone: saticiBilgileriMap['telefon'],
       ),
       customer: Customer(
         name: ref.watch(seciliFaturaProvider)['aliciAdi'],
@@ -808,6 +810,8 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
         supplier: Supplier(
           name: saticiBilgileriMap['adi'],
           address: saticiBilgileriMap['adresi'],
+          email: saticiBilgileriMap['email'],
+          phone: saticiBilgileriMap['telefon'],
         ),
         customer: Customer(
           name: ref.watch(seciliFaturaProvider)['aliciAdi'],

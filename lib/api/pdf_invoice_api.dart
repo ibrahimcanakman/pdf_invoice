@@ -89,19 +89,11 @@ class PdfSayfaFormati {
 
   static Widget buildInvoiceInfo(
       InvoiceInfo info, String tarih, String faturaNo) {
-    //final paymentTerms = '${info.dueDate.difference(info.date).inDays} days';
     final titles = <String>[
       'Invoice Number:',
       'Invoice Date:',
-      //'Payment Terms:',
-      //'Due Date:'
     ];
-    final data = <String>[
-      /* '${tarih.year}${tarih.month.toString().length == 1 ? '0${tarih.month}' : '${tarih.month}'}${tarih.day.toString().length == 1 ? '0${tarih.day}' : '${tarih.day}'}' */ faturaNo, //faturaNo
-      tarih, //tarih yazılacak
-      //paymentTerms,
-      //Utils.formatDate(info.dueDate),
-    ];
+    final data = <String>[faturaNo, tarih];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,13 +107,15 @@ class PdfSayfaFormati {
   }
 
   static Widget buildSupplierAddress(Supplier supplier) => Container(
-      width: 59 * PdfPageFormat.mm,
+      width: 70 * PdfPageFormat.mm,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(supplier.name, style: TextStyle(fontWeight: FontWeight.bold)),
           SizedBox(height: 1 * PdfPageFormat.mm),
           Text(supplier.address),
+          Text(supplier.email),
+          Text(supplier.phone),
         ],
       ));
 
@@ -289,7 +283,7 @@ class PdfSayfaFormati {
     final style = titleStyle ?? TextStyle(fontWeight: FontWeight.bold);
 
     return Container(
-      width: width / 1.2,
+      width: 70 * PdfPageFormat.mm, //width / 1.2,
       child: Row(
         children: [
           Expanded(child: Text(title, style: style)),
