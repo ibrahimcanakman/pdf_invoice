@@ -1,4 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+/* import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,6 +9,7 @@ import '../model/customer.dart';
 import '../model/invoice.dart';
 import '../model/supplier.dart';
 import '../provider/all_providers.dart';
+import '../translations/locale_keys.g.dart';
 import 'home_page.dart';
 
 // ignore: must_be_immutable
@@ -36,7 +38,7 @@ class FaturaSayfasi extends ConsumerWidget {
       };
     });
     return Scaffold(
-      appBar: AppBar(title: const Text('Fatura Oluşturma')),
+      appBar: AppBar(title: Text(LocaleKeys.fatura_kes.tr())),
       body: Center(
         child: ElevatedButton(
             onPressed: () async {
@@ -64,7 +66,7 @@ class FaturaSayfasi extends ConsumerWidget {
                 info: InvoiceInfo(
                   date: ref.watch(tarihProvider),
                   //dueDate: dueDate,
-                  description: ref.watch(aciklamaProvider) ?? '',
+                  description: ref.watch(seciliAciklamaProvider) ?? '',
                   //number: '${DateTime.now().year}-9999',
                 ),
                 items: [
@@ -129,8 +131,9 @@ class FaturaSayfasi extends ConsumerWidget {
 
               PdfApi.openFile(pdfFile);
             },
-            child: const Text('Faturayı Oluştur')),
+            child: Text(LocaleKeys.fatura_kes.tr())),
       ),
     );
   }
 }
+ */

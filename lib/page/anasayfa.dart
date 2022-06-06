@@ -1,11 +1,20 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf_invoice/page/aciklama_ekle.dart';
 import 'package:pdf_invoice/page/alici_sec.dart';
 import 'package:pdf_invoice/page/faturalarim.dart';
 import 'package:pdf_invoice/page/login_page.dart';
+import 'package:pdf_invoice/utils/database_helper.dart';
 
 import '../provider/all_providers.dart';
+import '../translations/locale_keys.g.dart';
+import 'ayarlar.dart';
 
 class AnaSayfa extends ConsumerStatefulWidget {
   const AnaSayfa({Key? key}) : super(key: key);
@@ -15,7 +24,9 @@ class AnaSayfa extends ConsumerStatefulWidget {
 }
 
 class _AnaSayfaState extends ConsumerState<AnaSayfa> {
-  //FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final TextEditingController _dogrulamaController = TextEditingController();
+
+  final _dogrulamaKey = GlobalKey<FormState>();
 
   /* final _saticiKey = GlobalKey<FormState>();
   final TextEditingController _saticiAdiController = TextEditingController();
@@ -29,11 +40,14 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
   //DatabaseHelper _databaseHelper = DatabaseHelper();
   //late List<Map<String, dynamic>> saticiFirma;
   late FirebaseAuth _auth;
+  late FirebaseFirestore _firestore;
   @override
   void initState() {
     super.initState();
     //saticiyiLocaldenGetir();
+    _firestore = FirebaseFirestore.instance;
     _auth = FirebaseAuth.instance;
+    yetkiSeviyesiGetir();
   }
 
   @override
@@ -58,7 +72,7 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('Ana Sayfa'),
+        title: Text(LocaleKeys.anasayfa.tr()),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -299,21 +313,27 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
                           },
                         );
                       } */
-                      
+
                       //else {
-                      ref.read(saticiAdi.notifier).update(
-                          (state) => _auth.currentUser!.email!);
-                      //BURADAN KESTİM
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const AliciSec(),
-                          ));
-                      //}
+                      if (ref.watch(yetkiSeviyesiProvider) != null &&
+                          ref.watch(yetkiSeviyesiProvider)! < 2) {
+                        await dogrulamaPenceresi(context);
+                      } else {
+                        ref
+                            .read(saticiAdi.notifier)
+                            .update((state) => _auth.currentUser!.email!);
+                        //BURADAN KESTİM
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AliciSec(),
+                            ));
+                        //}
+                      }
                     },
-                    child: const Text(
-                      'Fatura Kes',
-                      style: TextStyle(fontSize: 24),
+                    child: Text(
+                      LocaleKeys.fatura_kes.tr(),
+                      style: const TextStyle(fontSize: 24),
                     ))),
 
             SizedBox(
@@ -325,25 +345,62 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height / 10,
               child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const Faturalarim(),
-                        ));
+                  onPressed: () async {
+                    if (ref.watch(yetkiSeviyesiProvider) != null &&
+                        ref.watch(yetkiSeviyesiProvider)! < 2) {
+                      await dogrulamaPenceresi(context);
+                    } else {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const Faturalarim(),
+                          ));
+                    }
                   },
-                  child: const Text(
-                    'Faturalarım',
-                    style: TextStyle(fontSize: 24),
+                  child: Text(
+                    LocaleKeys.faturalarim.tr(),
+                    style: const TextStyle(fontSize: 24),
                   )),
             ),
             const Spacer(),
+            SizedBox(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height / 10,
+                child: ElevatedButton(
+                    onPressed: () async {
+                      if (ref.watch(yetkiSeviyesiProvider) != null &&
+                          ref.watch(yetkiSeviyesiProvider)! < 2) {
+                        await dogrulamaPenceresi(context);
+                      } else {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AyarlarSayfasi(),
+                            ));
+                      }
+                      /* Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AciklamaEkle(),
+                          )); */
+                    },
+                    child: Text(
+                      LocaleKeys.ayarlar.tr(),
+                      style: const TextStyle(fontSize: 24),
+                    ))),
+
+            SizedBox(
+              height: MediaQuery.of(context).size.height / 30,
+            ),
             SizedBox(
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height / 10,
               child: ElevatedButton(
                   onPressed: () async {
                     await FirebaseAuth.instance.signOut();
+                    ref
+                        .read(yetkiSeviyesiProvider.notifier)
+                        .update((state) => null);
                     Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
@@ -351,14 +408,118 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
                         ),
                         (route) => false);
                   },
-                  child: const Text(
-                    'Çıkış Yap',
-                    style: TextStyle(fontSize: 24),
+                  child: Text(
+                    LocaleKeys.cikis_yap.tr(),
+                    style: const TextStyle(fontSize: 24),
                   )),
             ),
           ],
         ),
       ),
     );
+  }
+
+  dogrulamaPenceresi(BuildContext context) async {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(LocaleKeys.uygulama_dogrulama.tr()),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(LocaleKeys
+                  .uygulamayi_kullanabilmek_icin_dogrulama_kodu_girmelisiniz
+                  .tr()),
+              Form(
+                key: _dogrulamaKey,
+                child: TextFormField(
+                  controller: _dogrulamaController,
+                  decoration: InputDecoration(
+                      label: Text(LocaleKeys.dogrulama_kodu.tr()),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15))),
+                  validator: (value) {
+                    if (value!.length != 4) {
+                      return LocaleKeys.gecersiz_kod.tr();
+                    } else if (ref
+                        .watch(dogrulamaKodlariProvider)
+                        .every((element) => element['kod'] != value)) {
+                      return LocaleKeys.gecersiz_kod.tr();
+                    } else {
+                      var kontrol = false;
+                      for (var element in ref.watch(dogrulamaKodlariProvider)) {
+                        if (element['kod'] == value &&
+                            !element['kullanildiMi']) {
+                          kontrol = true;
+                        }
+                      }
+                      if (!kontrol) {
+                        return LocaleKeys.gecersiz_kod.tr();
+                      } else {
+                        return null;
+                      }
+                    }
+                  },
+                ),
+              )
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  await _auth.signOut();
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => LoginPage(),
+                      ),
+                      (route) => false);
+                },
+                child: Text(LocaleKeys.vazgec.tr())),
+            ElevatedButton(
+                onPressed: () {
+                  if (_dogrulamaKey.currentState!.validate()) {
+                    koduKullanildiYap().then((value) {
+                      Navigator.pop(context);
+                    });
+                  } else {}
+                },
+                child: Text(LocaleKeys.dogrula.tr())),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> koduKullanildiYap() async {
+    ref.read(yetkiSeviyesiProvider.notifier).update((state) => 2);
+    String girilenKod = _dogrulamaController.text.trim();
+    List<dynamic> guncelListe = [];
+    for (var element in ref.watch(dogrulamaKodlariProvider)) {
+      if (element['kod'] == girilenKod) {
+        Map<String, dynamic> guncelElement = {
+          'kod': element['kod'],
+          'kullanildiMi': true
+        };
+        guncelListe.add(guncelElement);
+      } else {
+        guncelListe.add(element);
+      }
+    }
+    await _firestore.doc('kodlar/kodlar').update({'kodlar': guncelListe});
+    await _firestore
+        .doc('${_auth.currentUser!.email}/saticiFirma')
+        .update({'yetkiSeviyesi': 2});
+  }
+
+  Future<void> yetkiSeviyesiGetir() async {
+    var gelenBilgi =
+        await _firestore.doc('${_auth.currentUser!.email}/saticiFirma').get();
+    int yetkiSeviyesi = gelenBilgi.data()!['yetkiSeviyesi'];
+    ref.read(yetkiSeviyesiProvider.notifier).update((state) => yetkiSeviyesi);
+    //return yetkiSeviyesi;
   }
 }

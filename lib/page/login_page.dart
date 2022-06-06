@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pdf_invoice/page/anasayfa.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:pdf_invoice/translations/locale_keys.g.dart';
 
 import '../provider/all_providers.dart';
 
@@ -18,6 +20,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _saticiKey = GlobalKey<FormState>();
   final TextEditingController _emailGirisController = TextEditingController();
   final TextEditingController _sifreGirisController = TextEditingController();
+
+  
 
   final TextEditingController _emailKayitController = TextEditingController();
   final TextEditingController _sifreKayitController = TextEditingController();
@@ -51,32 +55,32 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (user == null) {
         debugPrint('User oturumu kapalı!');
       } else {
-        debugPrint(
-            'User oturum açık ${user.email} ve e-mail durumu ${user.emailVerified}');
-        if (user.emailVerified) {
-          if (mounted) {
-            Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AnaSayfa(),
-                ),
-                (route) => true);
+          debugPrint(
+              'User oturum açık ${user.email} ve e-mail durumu ${user.emailVerified}');
+          
+          if (user.emailVerified) {
+            if (mounted) {
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AnaSayfa(),
+                  ),
+                  (route) => true);
+            }
+          } else if (!user.emailVerified) {
+            showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    content: Text(LocaleKeys.mail_dogrulama_istek_mesaji.tr()),
+                    actions: [
+                      TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(LocaleKeys.tamam.tr()))
+                    ],
+                  );
+                });
           }
-        } else {
-          showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  content: const Text(
-                      'Uygulamaya giriş yapabilmek için hesap doğrulaması gerekli. Hesap doğrulaması için gönderilen maile bakın.'),
-                  actions: [
-                    TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Tamam'))
-                  ],
-                );
-              });
-        }
       }
     });
   }
@@ -106,7 +110,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: const Text('Giriş Ekranı'),
+        title: Text(LocaleKeys.giris_ekrani.tr()),
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: width / 10),
@@ -120,16 +124,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) {
                   if (value!.isEmpty) {
-                    return 'E-mail boş bırakılamaz';
+                    return LocaleKeys.email_bos_birakilamaz.tr();
                   } else if (!EmailValidator.validate(value)) {
-                    return 'Geçerli bir e-mail girin.';
+                    return LocaleKeys.gecerli_bir_email_adresi_girin.tr();
                   } else {
                     return null;
                   }
                 },
                 controller: _emailGirisController,
                 decoration: InputDecoration(
-                    label: const Text('E-Mail'),
+                    label: Text(LocaleKeys.email.tr()),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20))),
               ),
@@ -139,16 +143,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) {
                   if (value!.isEmpty) {
-                    return 'Şifre boş bırakılamaz';
+                    return LocaleKeys.sifre_bos_birakilamaz.tr();
                   } else if (value.length < 6) {
-                    return 'Şifre en az 6 karakter olmalı';
+                    return LocaleKeys.sifre_en_az_6_karakter_olmali.tr();
                   } else {
                     return null;
                   }
                 },
                 controller: _sifreGirisController,
                 decoration: InputDecoration(
-                    label: const Text('Şifre'),
+                    label: Text(LocaleKeys.sifre.tr()),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20))),
               ),
@@ -159,17 +163,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       loginUserEmailandPassword();
                     }
                   },
-                  child: const Text('Giriş Yap')),
+                  child: Text(LocaleKeys.giris_yap.tr())),
               TextButton(
                   onPressed: () {
                     kayitOl();
                   },
-                  child: const Text('Kayıt Ol')),
+                  child: Text(LocaleKeys.kayit_ol.tr())),
               TextButton(
                   onPressed: () {
                     sifremiUnuttum();
                   },
-                  child: const Text('Şifremi Unuttum')),
+                  child: Text(LocaleKeys.sifremi_unuttum.tr())),
               const Expanded(flex: 10, child: SizedBox()),
             ],
           ),
@@ -184,15 +188,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Kayıt Ol'),
+          title: Text(LocaleKeys.kayit_ol.tr()),
           content: Form(
               key: _saticiKey,
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                        'İlk girişiniz olduğu için faturalarda kullanılmak üzere firmanızın bilgilerini ve giriş bilgilerinizi bir kereliğine kaydetmelisiniz ! '),
+                    Text(LocaleKeys.ilk_giris_mesaji.tr()),
                     SizedBox(
                       height: MediaQuery.of(context).size.height / 50,
                     ),
@@ -201,15 +204,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       controller: _emailKayitController,
                       validator: (value) {
                         if (value!.trim().isEmpty) {
-                          return 'Boş bırakılamaz...';
+                          return LocaleKeys.bos_birakilamaz.tr();
                         } else if (!EmailValidator.validate(value)) {
-                          return 'Geçerli bir e-mail girin';
+                          return LocaleKeys.gecerli_bir_email_adresi_girin.tr();
                         } else {
                           return null;
                         }
                       },
                       decoration: InputDecoration(
-                          label: const Text('E-Mail'),
+                          label: Text(LocaleKeys.email.tr()),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15))),
                     ),
@@ -219,15 +222,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       obscureText: true,
                       validator: (value) {
                         if (value!.trim().isEmpty) {
-                          return 'Boş bırakılamaz...';
+                          return LocaleKeys.bos_birakilamaz.tr();
                         } else if (value.length < 6) {
-                          return 'Şifre en az 6 karakterden oluşmalı';
+                          return LocaleKeys.sifre_en_az_6_karakter_olmali.tr();
                         } else {
                           return null;
                         }
                       },
                       decoration: InputDecoration(
-                          label: const Text('Şifre'),
+                          label: Text(LocaleKeys.sifre.tr()),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15))),
                     ),
@@ -236,13 +239,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       controller: _saticiAdiController,
                       validator: (value) {
                         if (value!.trim().isEmpty) {
-                          return 'Boş bırakılamaz...';
+                          return LocaleKeys.bos_birakilamaz.tr();
                         } else {
                           return null;
                         }
                       },
                       decoration: InputDecoration(
-                          label: const Text('Firma Adı'),
+                          label: Text(LocaleKeys.firma_adi.tr()),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15))),
                     ),
@@ -252,13 +255,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       controller: _saticiAdresiController,
                       validator: (value) {
                         if (value!.trim().isEmpty) {
-                          return 'Boş bırakılamaz...';
+                          return LocaleKeys.bos_birakilamaz.tr();
                         } else {
                           return null;
                         }
                       },
                       decoration: InputDecoration(
-                          label: const Text('Firma Adresi'),
+                          label: Text(LocaleKeys.firma_adresi.tr()),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15))),
                     ),
@@ -268,13 +271,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       controller: _saticiTelefonController,
                       validator: (value) {
                         if (value!.trim().isEmpty) {
-                          return 'Boş bırakılamaz...';
+                          return LocaleKeys.bos_birakilamaz.tr();
                         } else {
                           return null;
                         }
                       },
                       decoration: InputDecoration(
-                          label: const Text('Telefon'),
+                          label: Text(LocaleKeys.telefon.tr()),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15))),
                     ),
@@ -283,13 +286,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       controller: _bankaAccountNameController,
                       validator: (value) {
                         if (value!.trim().isEmpty) {
-                          return 'Boş bırakılamaz...';
+                          return LocaleKeys.bos_birakilamaz.tr();
                         } else {
                           return null;
                         }
                       },
                       decoration: InputDecoration(
-                          label: const Text('Bank Account Name'),
+                          label: Text(LocaleKeys.banka_hesap_adi.tr()),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15))),
                     ),
@@ -299,13 +302,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       controller: _bankaSortCodeController,
                       validator: (value) {
                         if (value!.trim().isEmpty) {
-                          return 'Boş bırakılamaz...';
+                          return LocaleKeys.bos_birakilamaz.tr();
                         } else {
                           return null;
                         }
                       },
                       decoration: InputDecoration(
-                          label: const Text('Bank Sort Code'),
+                          label: Text(LocaleKeys.banka_sort_kodu.tr()),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15))),
                     ),
@@ -315,13 +318,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       controller: _bankaAccountNumberController,
                       validator: (value) {
                         if (value!.trim().isEmpty) {
-                          return 'Boş bırakılamaz...';
+                          return LocaleKeys.bos_birakilamaz.tr();
                         } else {
                           return null;
                         }
                       },
                       decoration: InputDecoration(
-                          label: const Text('Bank Account Number'),
+                          label: Text(LocaleKeys.banka_hesap_numarasi.tr()),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15))),
                     ),
@@ -330,7 +333,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               )),
           actions: <Widget>[
             TextButton(
-              child: const Text('Vazgeç'),
+              child: Text(LocaleKeys.vazgec.tr()),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -345,11 +348,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       padding: EdgeInsets.only(
                         bottom: MediaQuery.of(context).viewInsets.bottom,
                       ),
-                      child: const Text('Eksik bilgi girdiniz...'),
+                      child: Text(LocaleKeys.eksik_bilgi_girdiniz.tr()),
                     )));
                   }
                 },
-                child: const Text('KAYDET'))
+                child: Text(LocaleKeys.kaydet.tr()))
           ],
         );
       },
@@ -379,20 +382,22 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                content: const Text(
-                    'Bu mail adresi ile daha önce kayıt oluşturulmuş...'),
+                content: Text(LocaleKeys
+                    .bu_mail_adresi_ile_daha_once_kayit_olusturulmus
+                    .tr()),
                 actions: [
                   TextButton(
                       onPressed: () {
                         Navigator.pop(context);
                       },
-                      child: const Text('Tamam'))
+                      child: Text(LocaleKeys.tamam.tr()))
                 ],
               );
             });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Bir hata oluştu, daha sonra tekrar deneyin...')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                LocaleKeys.bir_hata_olustu_daha_sonra_tekrar_deneyin.tr())));
       }
     } catch (e) {
       debugPrint(e.toString());
@@ -401,41 +406,44 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   void loginUserEmailandPassword() async {
     try {
-      var _userCredential = await auth.signInWithEmailAndPassword(
+      
+        var _userCredential = await auth.signInWithEmailAndPassword(
           email: _emailGirisController.text.trim(),
           password: _sifreGirisController.text.trim());
-      debugPrint(_userCredential.toString());
-      var _myUser = _userCredential.user;
-      if (!_myUser!.emailVerified) {
-        showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                content: const Text(
-                    'Kayıt esnasında mail adresinize gönderilen doğrulama linkinden hesabınızı doğrulayın...'),
-                actions: [
-                  TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Tamam'))
-                ],
-              );
-            });
-      } else {
-        debugPrint('kullanıcının maili onaylanmış ilgili sayfaya gidebilir...');
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AnaSayfa(),
-            ),
-            (route) => false);
-        /* Navigator.push(
+        kodlariGetir();
+        //int yetkiSeviyesi = ref.watch(yetkiSeviyesiProvider)!;
+        debugPrint(_userCredential.toString());
+        var _myUser = _userCredential.user;
+        if (!_myUser!.emailVerified) {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  content: Text(LocaleKeys.kayit_esnasinda_mail_adresinize_gonderilen.tr()),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Tamam'))
+                  ],
+                );
+              });
+        } else {
+          debugPrint(
+              'kullanıcının maili onaylanmış ilgili sayfaya gidebilir...');
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AnaSayfa(),
+              ),
+              (route) => false);
+          /* Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => const AnaSayfa(),
             )); */
-      }
+        }
 
       /* await kullaniciBilgileriGetir();
       Navigator.of(context).pushReplacement(MaterialPageRoute(
@@ -448,21 +456,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             content: Padding(
           padding:
               EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: const Text('Bu e-mail ile kayıtlı kullanıcı yok.'),
+          child: Text(LocaleKeys.bu_email_ile_kayitli_kullanici_yok.tr()),
         )));
       } else if (e.code == 'wrong-password') {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Padding(
           padding:
               EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: const Text('Şifreyi yanlış girdiniz.'),
+          child: Text(LocaleKeys.sifreyi_yanlis_girdiniz.tr()),
         )));
       } else if (e.code == 'invalid-email') {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Padding(
           padding:
               EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: const Text('Geçerli bir e-mail adresi girin.'),
+          child: Text(LocaleKeys.gecerli_bir_email_adresi_girin.tr()),
         )));
       }
 
@@ -471,8 +479,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           const SnackBar(content: Text('E-mail veya Şifre Yanlış Girildi...'))); */
     } catch (e) {
       debugPrint(e.toString());
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('E-mail veya Şifre Yanlış Girildi...')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(LocaleKeys.email_veya_sifre_yanlis_girildi.tr())));
     }
   }
 
@@ -484,7 +492,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       'telefon': _saticiTelefonController.text.trim(),
       'bankaAccountName': _bankaAccountNameController.text.trim(),
       'bankaSortCode': _bankaSortCodeController.text.trim(),
-      'bankaAccountNumber': _bankaAccountNumberController.text.trim()
+      'bankaAccountNumber': _bankaAccountNumberController.text.trim(),
+      'yetkiSeviyesi': 1
     };
     //await _databaseHelper.kaydet(_emailKayitController.text);
     Future(
@@ -493,6 +502,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             .collection(_emailKayitController.text.trim())
             .doc('saticiFirma')
             .set(firmaBilgileri);
+        _firestore
+        .collection(_emailKayitController.text.trim())
+        .doc('saticiFirma')
+        .collection('faturaNoBicim')
+        .doc('faturaNoBicim')
+        .set({'faturaNoBicim': 'Tarih + Sayı'});
       },
     ).then((value) {
       ref
@@ -511,21 +526,22 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               TextButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    _sifreSifirlamaEmailController.text='';
+                    _sifreSifirlamaEmailController.text = '';
                   },
-                  child: const Text('Vazgeç')),
+                  child: Text(LocaleKeys.vazgec.tr())),
               ElevatedButton(
                   onPressed: () async {
                     sifreSifirlamaMailiGonder();
 
                     //Navigator.pop(context);
                   },
-                  child: const Text('TAMAM'))
+                  child: Text(LocaleKeys.tamam.tr()))
             ],
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('Şifrenizi yenilemek için mail adresinizi girin.'),
+                Text(LocaleKeys.sifrenizi_yenilemek_icin_mail_adresinizi_girin
+                    .tr()),
                 SizedBox(
                   height: MediaQuery.of(context).size.height / 40,
                 ),
@@ -535,23 +551,23 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value!.isEmpty) {
-                        return 'E-mail boş bırakılamaz';
+                        return LocaleKeys.email_bos_birakilamaz.tr();
                       } else if (!EmailValidator.validate(value)) {
-                        return 'Geçerli bir e-mail girin.';
+                        return LocaleKeys.gecerli_bir_email_adresi_girin.tr();
                       } else {
                         return null;
                       }
                     },
                     controller: _sifreSifirlamaEmailController,
                     decoration: InputDecoration(
-                        label: const Text('E-Mail'),
+                        label: Text(LocaleKeys.email.tr()),
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20))),
                   ),
                 )
               ],
             ),
-            title: const Text('Şifremi Unuttum'),
+            title: Text(LocaleKeys.sifremi_unuttum.tr()),
           );
         });
   }
@@ -569,13 +585,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           
         }); */
         Navigator.pop(context);
-        _sifreSifirlamaEmailController.text='';
+        _sifreSifirlamaEmailController.text = '';
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Padding(
           padding:
               EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: const Text(
-              'Şifre sıfırlama maili gönderildi, gönderilen mailden şifrenizi sıfırlayabilirsiniz.'),
+          child: Text(LocaleKeys.sifre_sifirlama_maili_gonderildi.tr()),
         )));
       } on FirebaseAuthException catch (e) {
         debugPrint(e.code);
@@ -584,17 +599,29 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               content: Padding(
             padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: const Text('Bu e-mail ile kayıtlı kullanıcı yok.'),
+            child: Text(LocaleKeys.bu_email_ile_kayitli_kullanici_yok.tr()),
           )));
         } else if (e.code == 'invalid-email') {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Padding(
             padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: const Text('Geçerli bir e-mail adresi girin.'),
+            child: Text(LocaleKeys.gecerli_bir_email_adresi_girin.tr()),
           )));
         }
       }
     }
   }
+
+  
+
+  void kodlariGetir() async {
+    var kodlar = await _firestore.doc('kodlar/kodlar').get();
+    List<dynamic> kodlarListesi = kodlar.data()!['kodlar'];
+    ref
+        .read(dogrulamaKodlariProvider.notifier)
+        .update((state) => kodlarListesi);
+  }
+
+  
 }

@@ -1,4 +1,4 @@
-/* import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:io';
@@ -52,7 +52,23 @@ class DatabaseHelper {
     return await openDatabase(path, readOnly: false);
   }
 
-  Future<int> kaydet(String firma) async {
+  Future<int> aciklamaekle(String aciklama) async{
+    var db = await _getDatabase();
+    var a = await db.insert('aciklamalar', {
+      'aciklama': aciklama
+    });
+    return a;
+  }
+
+  Future<List<Map<String, dynamic>>> aciklamalarigetir() async {
+    var db = await _getDatabase();
+    var sonuc = await db.query('aciklamalar');
+    return sonuc;
+  }
+
+  
+
+  /* Future<int> kaydet(String firma) async {
     var db = await _getDatabase();
     var a = await db.delete('firma');
     var sonuc = await db.insert('firma', {'firmaAdi': firma});
@@ -63,7 +79,7 @@ class DatabaseHelper {
     var db = await _getDatabase();
     var sonuc = await db.query('firma');
     return sonuc;
-  }
+  } */
 
   
 
@@ -79,4 +95,4 @@ class DatabaseHelper {
 
 
 
-} */
+}

@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdf_invoice/constants/description_controllers.dart';
+import 'package:pdf_invoice/page/aciklama_ekle.dart';
 import 'package:pdf_invoice/page/faturalarim.dart';
 import '../provider/all_providers.dart';
+import '../translations/locale_keys.g.dart';
 
 class DescriptionAddPage extends ConsumerStatefulWidget {
   const DescriptionAddPage({Key? key}) : super(key: key);
@@ -47,7 +50,7 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          title: const Text('Description Add'),
+          title: Text(LocaleKeys.urun_ekle.tr()),
         ),
         body: Column(
           children: [
@@ -105,8 +108,8 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
               color: Colors.grey,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: const [
-                  Expanded(
+                children: [
+                  const Expanded(
                       flex: 1,
                       //width: MediaQuery.of(context).size.width / 5,
                       child: SizedBox()),
@@ -115,7 +118,7 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                       //width: MediaQuery.of(context).size.width / 5,
                       child: Center(
                         child: Text(
-                          'Ürün Adı:',
+                          LocaleKeys.urun_adi.tr(),
                           textAlign: TextAlign.center,
                         ),
                       )),
@@ -124,7 +127,7 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                       //width: MediaQuery.of(context).size.width / 5,
                       child: Center(
                         child: Text(
-                          'Miktarı:',
+                          LocaleKeys.miktari.tr(),
                           textAlign: TextAlign.center,
                         ),
                       )),
@@ -133,7 +136,7 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                       //width: MediaQuery.of(context).size.width / 5,
                       child: Center(
                         child: Text(
-                          'Birim Fiyatı:',
+                          LocaleKeys.birim_fiyati.tr(),
                           textAlign: TextAlign.center,
                         ),
                       )),
@@ -142,7 +145,7 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                       //width: MediaQuery.of(context).size.width / 5,
                       child: Center(
                         child: Text(
-                          'KDV:',
+                          LocaleKeys.kdv.tr(),
                           textAlign: TextAlign.center,
                         ),
                       )),
@@ -240,9 +243,9 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                                                       .size
                                                       .width /
                                                   3,
-                                              child: const Text(
-                                                'Net total',
-                                                style: TextStyle(
+                                              child: Text(
+                                                LocaleKeys.net_toplam.tr(),
+                                                style: const TextStyle(
                                                     fontWeight:
                                                         FontWeight.bold),
                                               )),
@@ -266,9 +269,9 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                                                       .size
                                                       .width /
                                                   3,
-                                              child: const Text(
-                                                'Vat %', //değişen kdv oranlarında burada yazılan da değişmeli, fakat bir faturada birden fazla farklı kdv oranı olursa nasıl olacak...
-                                                style: TextStyle(
+                                              child: Text(
+                                                '${LocaleKeys.kdv.tr()} %', //değişen kdv oranlarında burada yazılan da değişmeli, fakat bir faturada birden fazla farklı kdv oranı olursa nasıl olacak...
+                                                style: const TextStyle(
                                                     fontWeight:
                                                         FontWeight.bold),
                                               )),
@@ -302,9 +305,9 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                                                       .size
                                                       .width /
                                                   3,
-                                              child: const Text(
-                                                'Total amount due',
-                                                style: TextStyle(
+                                              child: Text(
+                                                LocaleKeys.toplam_tutar.tr(),
+                                                style: const TextStyle(
                                                     fontWeight:
                                                         FontWeight.bold),
                                               )),
@@ -391,7 +394,8 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                                     bottom: MediaQuery.of(context)
                                         .viewInsets
                                         .bottom),
-                                child: const Text('Alanlar boş bırakılamaz...'),
+                                child: Text(
+                                    LocaleKeys.alanlar_bos_birakilamaz.tr()),
                               )));
                             }
                           },
@@ -410,11 +414,17 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                         child: ElevatedButton(
                             onPressed: () {
                               if (ref.watch(urunListesiProvider).isNotEmpty) {
-                                faturayiFirebaseYaz(ref);
-                                Navigator.push(
+                                faturayiFirebaseYazmakIcinMap(ref);
+                                /* Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => const Faturalarim(),
+                                    )); */
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const AciklamaEkle(),
                                     ));
                                 ref
                                     .read(radioFaturaProvider.notifier)
@@ -432,12 +442,13 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                                       bottom: MediaQuery.of(context)
                                           .viewInsets
                                           .bottom),
-                                  child: const Text(
-                                      'Boş fatura oluşturulamaz, ürün girin...'),
+                                  child: Text(LocaleKeys
+                                      .bos_fatura_olusturulamaz_urun_girin
+                                      .tr()),
                                 )));
                               }
                             },
-                            child: const Text('Kaydet'))),
+                            child: Text(LocaleKeys.kaydet.tr()))),
                   ),
                 ],
               ),
@@ -494,8 +505,9 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
     }
   }
 
-  void faturayiFirebaseYaz(WidgetRef ref) async {
+  void faturayiFirebaseYazmakIcinMap(WidgetRef ref) async {
     Map<String, dynamic> eklenecekFatura = {
+      'createdAt':ref.watch(tarihDatetimeProvider),
       'aliciAdi': ref.watch(gecerliMusteri)['adi'],
       'aliciAdresi': ref.watch(gecerliMusteri)['adresi'],
       'aliciEmail': ref.watch(gecerliMusteri)['email'],
@@ -507,12 +519,9 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
       'urunler': [for (var item in ref.watch(urunListesiProvider)) item]
     };
 
-    await _firestore
-        .collection(ref.watch(saticiAdi))
-        .doc('saticiFirma')
-        .collection('faturalar')
-        .doc(ref.watch(faturaNoProvider))
-        .set(eklenecekFatura);
+    ref.read(yazilacakFaturaMapProvider.notifier).update((state) => eklenecekFatura);
+
+    
     ref.read(urunListesiProvider.notifier).update((state) => []);
   }
 
@@ -548,7 +557,7 @@ class DescriptionWidget extends StatelessWidget {
               child: TextFormField(
                 controller: urunAdi,
                 decoration: InputDecoration(
-                    label: const Text('Ürün Adı'),
+                    label: Text(LocaleKeys.urun_adi.tr()),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15))),
               ),
@@ -560,7 +569,7 @@ class DescriptionWidget extends StatelessWidget {
                 keyboardType: TextInputType.number,
                 controller: urunMiktari,
                 decoration: InputDecoration(
-                    label: const Text('Ürün Miktarı'),
+                    label: Text(LocaleKeys.urun_miktari.tr()),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15))),
               ),
@@ -580,7 +589,7 @@ class DescriptionWidget extends StatelessWidget {
                 keyboardType: TextInputType.number,
                 controller: urunBirimi,
                 decoration: InputDecoration(
-                    label: const Text('Ürün Birim Fiyatı'),
+                    label: Text(LocaleKeys.urun_birim_fiyati.tr()),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15))),
               ),
@@ -592,7 +601,7 @@ class DescriptionWidget extends StatelessWidget {
                 keyboardType: TextInputType.number,
                 controller: urunKDV,
                 decoration: InputDecoration(
-                    label: const Text('Ürün KDV %'),
+                    label: Text('${LocaleKeys.urun_kdv.tr()} %'),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15))),
               ),

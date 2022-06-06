@@ -1,6 +1,9 @@
+/* import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdf_invoice/page/description_add_page.dart';
+
+import '../translations/locale_keys.g.dart';
 
 final saticiFirmaProvider = StateProvider<String?>(
   (ref) => null,
@@ -31,7 +34,7 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Generate Invoice'),
+        title: Text(LocaleKeys.fatura_kes.tr()),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -42,7 +45,7 @@ class HomePage extends ConsumerWidget {
                 child: TextFormField(
               controller: saticiFirmaController,
               decoration: InputDecoration(
-                  label: const Text('Satıcı Firma'),
+                  label: Text(LocaleKeys.satici_firma.tr()),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15))),
             )),
@@ -50,7 +53,7 @@ class HomePage extends ConsumerWidget {
                 child: TextFormField(
               controller: saticiAdresController,
               decoration: InputDecoration(
-                  label: const Text('Satıcı Firma Adres'),
+                  label: Text(LocaleKeys.satici_firma_adres.tr()),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15))),
             )),
@@ -58,7 +61,7 @@ class HomePage extends ConsumerWidget {
                 child: TextFormField(
               controller: aliciFirmaController,
               decoration: InputDecoration(
-                  label: const Text('Alıcı Firma'),
+                  label: Text(LocaleKeys.alici_firma.tr()),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15))),
             )),
@@ -66,7 +69,7 @@ class HomePage extends ConsumerWidget {
                 child: TextFormField(
               controller: aliciAdresController,
               decoration: InputDecoration(
-                  label: const Text('Alıcı Firma Adres'),
+                  label: Text(LocaleKeys.alici_firma_adres.tr()),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15))),
             )),
@@ -74,7 +77,7 @@ class HomePage extends ConsumerWidget {
                 child: TextFormField(
               controller: aciklamaController,
               decoration: InputDecoration(
-                  label: const Text('Açıklama (opsiyonel)'),
+                  label: Text(LocaleKeys.aciklama.tr()),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15))),
             )),
@@ -99,10 +102,11 @@ class HomePage extends ConsumerWidget {
                     builder: (context) => const DescriptionAddPage(),
                   ));
                 },
-                child: const Text('Ürün Ekle'))
+                child: Text(LocaleKeys.urun_ekle.tr()))
           ],
         ),
       ),
     );
   }
 }
+ */

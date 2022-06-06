@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdf_invoice/page/alici_bilgisi_duzenle.dart';
 import 'package:pdf_invoice/page/alici_bilgisi_ekle.dart';
 import 'package:pdf_invoice/page/tarih_sec.dart';
+import 'package:pdf_invoice/translations/locale_keys.g.dart';
 
 import '../constants/constant.dart';
 import '../provider/all_providers.dart';
@@ -36,7 +38,7 @@ class _AliciSecState extends ConsumerState<AliciSec> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Alıcı Seç'),
+          title: Text(LocaleKeys.alici_sec.tr()),
         ),
         bottomNavigationBar: BottomNavigationBar(
             showUnselectedLabels: true,
@@ -52,10 +54,11 @@ class _AliciSecState extends ConsumerState<AliciSec> {
                     builder: (BuildContext context) {
                       return AlertDialog(
                         //title: const Text('Alıcı Seçmediniz'),
-                        content: const Text('Lütfen alıcı seçimi yapın.'),
+                        content:
+                            Text(LocaleKeys.lutfen_alici_secimi_yapin.tr()),
                         actions: <Widget>[
                           TextButton(
-                            child: const Text('Tamam'),
+                            child: Text(LocaleKeys.tamam.tr()),
                             onPressed: () {
                               Navigator.of(context).pop();
                             },
@@ -77,12 +80,13 @@ class _AliciSecState extends ConsumerState<AliciSec> {
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            title: const Text('Alıcı Bilgisi Sil'),
-                            content: const Text(
-                                'Bu alıcı silinecek, onaylıyor musunuz ?'),
+                            title: Text(LocaleKeys.alici_bilgisi_sil.tr()),
+                            content: Text(LocaleKeys
+                                .bu_alici_silinecek_onayliyor_musun
+                                .tr()),
                             actions: <Widget>[
                               TextButton(
-                                child: const Text('Vazgeç'),
+                                child: Text(LocaleKeys.vazgec.tr()),
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                 },
@@ -99,7 +103,7 @@ class _AliciSecState extends ConsumerState<AliciSec> {
                                     setState(() {});
                                     Navigator.of(context).pop();
                                   },
-                                  child: const Text('SİL'))
+                                  child: Text(LocaleKeys.sil.tr()))
                             ],
                           );
                         });
@@ -113,11 +117,13 @@ class _AliciSecState extends ConsumerState<AliciSec> {
                   .update((state) => false); */
               ref.read(radioAliciProvider.notifier).update((state) => null);
             },
-            items: const [
+            items: [
               BottomNavigationBarItem(
-                  icon: Icon(Icons.edit), label: 'Bilgileri Düzenle'),
+                  icon: const Icon(Icons.edit),
+                  label: LocaleKeys.bilgileri_duzenle.tr()),
               BottomNavigationBarItem(
-                  icon: Icon(Icons.delete), label: 'Alıcıyı Sil')
+                  icon: const Icon(Icons.delete),
+                  label: LocaleKeys.aliciyi_sil.tr())
             ]),
         body: ListView(
           children: [
@@ -150,10 +156,10 @@ class _AliciSecState extends ConsumerState<AliciSec> {
                         SizedBox(
                           width: MediaQuery.of(context).size.width / 20,
                         ),
-                        const Text(
-                          'Müşteri Ekle',
+                        Text(
+                          LocaleKeys.musteri_ekle.tr(),
                           textAlign: TextAlign.left,
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 22),
                         )
                       ],
@@ -232,15 +238,15 @@ class _AliciSecState extends ConsumerState<AliciSec> {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const TarihSec(),
+                                    builder: (context) => TarihSec(),
                                   ));
                               ref
                                   .read(radioAliciProvider.notifier)
                                   .update((state) => null);
                             },
-                            child: const Text(
-                              'Seç ve Devam Et',
-                              style: TextStyle(
+                            child: Text(
+                              LocaleKeys.sec_ve_devam_et.tr(),
+                              style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 20),
                             )),
                       ),

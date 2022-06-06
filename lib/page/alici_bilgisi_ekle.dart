@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../provider/all_providers.dart';
+import '../translations/locale_keys.g.dart';
 
 // ignore: must_be_immutable
 class AliciBilgisiEkle extends ConsumerWidget {
@@ -33,7 +35,7 @@ class AliciBilgisiEkle extends ConsumerWidget {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: const Text('Alıcı Bilgisi Ekleme'),
+        title: Text(LocaleKeys.alici_bilgisi_ekleme.tr()),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -45,17 +47,17 @@ class AliciBilgisiEkle extends ConsumerWidget {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) {
                   if (value!.isEmpty) {
-                    return 'Boş bırakılamaz';
+                    return LocaleKeys.bos_birakilamaz.tr();
                   } else if (kayitliMusteriAdlari
                       .contains(value.toLowerCase())) {
-                    return 'Bu isimle kayıtlı bir müşteri bulunmakta';
+                    return LocaleKeys.bu_isimle_kayitli_bir_musteri_bulunmakta.tr();
                   } else {
                     return null;
                   }
                 },
                 controller: adiController,
                 decoration: InputDecoration(
-                    label: const Text('Müşteri Adı:'),
+                    label: Text(LocaleKeys.musteri_adi.tr()),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20))),
               ),
@@ -66,7 +68,7 @@ class AliciBilgisiEkle extends ConsumerWidget {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) {
                   if (value!.isEmpty) {
-                    return 'Boş bırakılamaz';
+                    return LocaleKeys.bos_birakilamaz.tr();
                   } else {
                     return null;
                   }
@@ -74,7 +76,7 @@ class AliciBilgisiEkle extends ConsumerWidget {
                 controller: adresiController,
                 maxLines: 5,
                 decoration: InputDecoration(
-                    label: const Text('Adresi:'),
+                    label: Text(LocaleKeys.adresi.tr()),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20))),
               ),
@@ -86,14 +88,14 @@ class AliciBilgisiEkle extends ConsumerWidget {
                 keyboardType: TextInputType.phone,
                 validator: (value) {
                   if (value!.isEmpty) {
-                    return 'Boş bırakılamaz';
+                    return LocaleKeys.bos_birakilamaz.tr();
                   } else {
                     return null;
                   }
                 },
                 controller: telefonController,
                 decoration: InputDecoration(
-                    label: const Text('Telefon:'),
+                    label: Text(LocaleKeys.telefon.tr()),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20))),
               ),
@@ -105,16 +107,16 @@ class AliciBilgisiEkle extends ConsumerWidget {
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value!.isEmpty) {
-                    return 'Boş bırakılamaz';
+                    return LocaleKeys.bos_birakilamaz.tr();
                   } else if (!EmailValidator.validate(value)) {
-                    return 'Geçerli bir e-mail adresi giriniz.';
+                    return LocaleKeys.gecerli_bir_email_adresi_girin.tr();
                   } else {
                     return null;
                   }
                 },
                 controller: emailController,
                 decoration: InputDecoration(
-                    label: const Text('E-Mail:'),
+                    label: Text(LocaleKeys.email.tr()),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20))),
               ),
@@ -167,12 +169,11 @@ class AliciBilgisiEkle extends ConsumerWidget {
                               barrierDismissible: true, // user must tap button!
                               builder: (BuildContext context) {
                                 return AlertDialog(
-                                  title: const Text('Hata Oluştu'),
-                                  content: const Text(
-                                      'Müşteri kaydı yapılırken hata oluştu, tekrar deneyin...'),
+                                  title: Text(LocaleKeys.hata_olustu.tr()),
+                                  content: Text(LocaleKeys.musteri_kaydi_yapilirken_hata_olustu_tekrar_deneyin.tr()),
                                   actions: <Widget>[
                                     TextButton(
-                                      child: const Text('Tamam'),
+                                      child: Text(LocaleKeys.tamam.tr()),
                                       onPressed: () {
                                         Navigator.of(context).pop();
                                       },
@@ -188,12 +189,11 @@ class AliciBilgisiEkle extends ConsumerWidget {
                             padding: EdgeInsets.only(
                                 bottom:
                                     MediaQuery.of(context).viewInsets.bottom),
-                            child: const Text(
-                                'Alanları doğru doldurduğunuzdan emin olun.'),
+                            child: Text(LocaleKeys.alanlari_dogru_doldurdugunuzdan_emin_olun.tr()),
                           )));
                         }
                       },
-                      child: const Text('KAYDET')))
+                      child: Text(LocaleKeys.kaydet.tr())))
             ],
           ),
         ),

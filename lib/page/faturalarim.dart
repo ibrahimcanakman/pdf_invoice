@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mailer/mailer.dart';
@@ -8,7 +9,7 @@ import 'package:mailer/smtp_server.dart';
 import 'package:mailer/smtp_server/hotmail.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf_invoice/page/anasayfa.dart';
-import 'package:pdf_invoice/page/description_add_page.dart';
+import 'package:pdf_invoice/page/urun_ekleme_page.dart';
 
 import '../api/pdf_api.dart';
 import '../api/pdf_invoice_api.dart';
@@ -17,6 +18,7 @@ import '../model/customer.dart';
 import '../model/invoice.dart';
 import '../model/supplier.dart';
 import '../provider/all_providers.dart';
+import '../translations/locale_keys.g.dart';
 import 'alici_sec.dart';
 
 class Faturalarim extends ConsumerStatefulWidget {
@@ -57,7 +59,8 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
         .get();
     var gelenFaturalarListesi = gelenFaturalarSS.docs;
     gelenFaturalarListesi
-        .sort((a, b) => int.parse(b.id).compareTo(int.parse(a.id)));
+        .sort((a, b) => b.data()['createdAt'].compareTo(a.data()['createdAt']));
+
     ref
         .read(faturalarProvider.notifier)
         .update((state) => gelenFaturalarListesi);
@@ -86,7 +89,7 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Faturalarım'),
+          title: Text(LocaleKeys.faturalarim.tr()),
         ),
 
         //bottom nav bar
@@ -122,20 +125,24 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
                     default:
                   }
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Fatura seçimi yapın...')));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(LocaleKeys.fatura_secimi_yapin.tr())));
                 }
                 ref.read(radioFaturaProvider.notifier).update((state) => null);
               },
-              items: const [
+              items: [
                 BottomNavigationBarItem(
-                    label: 'Görüntüle', icon: Icon(Icons.picture_as_pdf)),
+                    label: LocaleKeys.goruntule.tr(),
+                    icon: const Icon(Icons.picture_as_pdf)),
                 BottomNavigationBarItem(
-                    label: 'Düzenle', icon: Icon(Icons.edit_note_sharp)),
+                    label: LocaleKeys.duzenle.tr(),
+                    icon: const Icon(Icons.edit_note_sharp)),
                 BottomNavigationBarItem(
-                    label: 'Gönder', icon: Icon(Icons.share)),
+                    label: LocaleKeys.gonder.tr(),
+                    icon: const Icon(Icons.share)),
                 BottomNavigationBarItem(
-                    label: 'Fatura Sil', icon: Icon(Icons.delete))
+                    label: LocaleKeys.faturayi_sil.tr(),
+                    icon: const Icon(Icons.delete))
               ]),
         ),
         body: /* ref.watch(faturalarProvider).isEmpty
@@ -393,9 +400,10 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
                   SizedBox(
                     width: MediaQuery.of(context).size.width / 20,
                   ),
-                  const Text(
-                    'Yeni Fatura Ekle',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                  Text(
+                    LocaleKeys.yeni_fatura_ekle.tr(),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 22),
                   )
                 ],
               ),
@@ -481,7 +489,7 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
       ),
       info: InvoiceInfo(
         date: ref.watch(seciliFaturaProvider)['faturaTarihi'],
-        description: '',
+        description: ref.watch(seciliFaturaProvider)['aciklama'],
       ),
       items: [
         for (var item in ref.watch(seciliFaturaProvider)['urunler'])
@@ -528,6 +536,9 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
     ref
         .read(tarihProvider.notifier)
         .update((state) => ref.watch(seciliFaturaProvider)['faturaTarihi']);
+    ref
+        .read(seciliAciklamaProvider.notifier)
+        .update((state) => ref.watch(seciliFaturaProvider)['aciklama']);
     Navigator.push(
         context,
         MaterialPageRoute(
@@ -660,12 +671,12 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
     showDialog(
         context: context,
         builder: (context) => AlertDialog(
-              title: const Text('Fatura Silme'),
-              content: const Text('Fatura silinecek onaylıyor musunuz ?'),
+              title: Text(LocaleKeys.faturayi_sil.tr()),
+              content: Text(LocaleKeys.fatura_silinecek_onayliyor_musunuz.tr()),
               actions: [
                 TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Vazgeç')),
+                    child: Text(LocaleKeys.vazgec.tr())),
                 ElevatedButton(
                     onPressed: () async {
                       await _firestore
@@ -680,7 +691,7 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
                           .read(radioFaturaProvider.notifier)
                           .update((state) => null);
                     },
-                    child: const Text('SİL'))
+                    child: Text(LocaleKeys.sil.tr()))
               ],
             ));
   }
@@ -821,7 +832,7 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
         ),
         info: InvoiceInfo(
           date: ref.watch(seciliFaturaProvider)['faturaTarihi'],
-          description: '',
+          description: ref.watch(seciliFaturaProvider)['aciklama'],
         ),
         items: [
           for (var item in ref.watch(seciliFaturaProvider)['urunler'])
@@ -856,12 +867,13 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
       try {
         final sendReport = await send(message, smtpServer);
         debugPrint('Message sent: ' + sendReport.toString());
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Mail gönderildi')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(LocaleKeys.mail_gonderildi.tr())));
       } on MailerException catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text(
-                'Mail gönderilirken hata oluştu, daha sonra tekrar deneyin')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(LocaleKeys
+                .mail_gonderilirken_hata_olustu_daha_sonra_tekrar_deneyin
+                .tr())));
         debugPrint('Message not sent.');
         for (var p in e.problems) {
           debugPrint('Problem: ${p.code}: ${p.msg}');
@@ -869,8 +881,8 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Fatura bulunamadı...'),
+        SnackBar(
+          content: Text(LocaleKeys.fatura_bulunamadi.tr()),
         ),
       );
     }

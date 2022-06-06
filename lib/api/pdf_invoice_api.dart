@@ -1,8 +1,10 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/widgets.dart';
 import 'package:pdf_invoice/api/pdf_api.dart';
+import 'package:syncfusion_flutter_signaturepad/signaturepad.dart';
 
 import '../model/customer.dart';
 import '../model/invoice.dart';
@@ -204,7 +206,7 @@ class PdfSayfaFormati {
                   unite: true,
                 ),
                 buildText(
-                  title: 'Vat $vatPercent %',
+                  title: 'Vat', //'Vat $vatPercent %',
                   value: Utils.formatPrice(vat),
                   unite: true,
                 ),
@@ -239,18 +241,28 @@ class PdfSayfaFormati {
           // Account Name
           //Sort Code
           //Account Number
-          Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-            buildSimpleText(
-                title: 'Account Name__: ',
-                value: bankaBilgileri['accountName']),
-            SizedBox(height: 1 * PdfPageFormat.mm),
-            buildSimpleText(
-                title: 'Sort Code______: ', value: bankaBilgileri['sortCode']),
-            SizedBox(height: 1 * PdfPageFormat.mm),
-            buildSimpleText(
-                title: 'Account Number: ',
-                value: bankaBilgileri['accountNumber']),
-          ])
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            pw.Container(
+                height: 35 * PdfPageFormat.mm,
+                width: 70 * PdfPageFormat.mm,
+                decoration: pw.BoxDecoration(border: Border.all()),
+                //imza eklemeye çalış
+                ),
+            Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+              buildSimpleText(
+                  title: 'Account Name__: ',
+                  value: bankaBilgileri['accountName']),
+              SizedBox(height: 1 * PdfPageFormat.mm),
+              buildSimpleText(
+                  title: 'Sort Code______: ',
+                  value: bankaBilgileri['sortCode']),
+              SizedBox(height: 1 * PdfPageFormat.mm),
+              buildSimpleText(
+                  title: 'Account Number: ',
+                  value: bankaBilgileri['accountNumber']),
+            ])
+          ]),
+
           /* SizedBox(height: 1 * PdfPageFormat.mm),
           buildSimpleText(title: 'Paypal', value: invoice.supplier.paymentInfo), */
         ],

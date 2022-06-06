@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../provider/all_providers.dart';
+import '../translations/locale_keys.g.dart';
 
 // ignore: must_be_immutable
 class AliciBilgisiDuzenle extends ConsumerWidget {
@@ -40,7 +42,7 @@ class AliciBilgisiDuzenle extends ConsumerWidget {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          title: const Text('Alıcı Bilgisi Düzenleme'),
+          title: Text(LocaleKeys.alici_bilgisi_duzenleme.tr()),
         ),
         body: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -49,7 +51,7 @@ class AliciBilgisiDuzenle extends ConsumerWidget {
               TextFormField(
                 controller: _adiController,
                 decoration: InputDecoration(
-                    label: const Text('Müşteri Adı:'),
+                    label: Text(LocaleKeys.musteri_adi.tr()),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20))),
               ),
@@ -60,7 +62,7 @@ class AliciBilgisiDuzenle extends ConsumerWidget {
                 controller: _adresiController,
                 maxLines: 5,
                 decoration: InputDecoration(
-                    label: const Text('Adresi:'),
+                    label: Text(LocaleKeys.adresi.tr()),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20))),
               ),
@@ -70,7 +72,7 @@ class AliciBilgisiDuzenle extends ConsumerWidget {
               TextFormField(
                 controller: _telefonController,
                 decoration: InputDecoration(
-                    label: const Text('Telefon:'),
+                    label: Text(LocaleKeys.telefon.tr()),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20))),
               ),
@@ -80,7 +82,7 @@ class AliciBilgisiDuzenle extends ConsumerWidget {
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
-                    label: const Text('E-Mail:'),
+                    label: Text(LocaleKeys.email.tr()),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20))),
               ),
@@ -98,7 +100,7 @@ class AliciBilgisiDuzenle extends ConsumerWidget {
                             padding: EdgeInsets.only(
                                 bottom:
                                     MediaQuery.of(context).viewInsets.bottom),
-                            child: const Text('Alanlar boş bırakılamaz'),
+                            child: Text(LocaleKeys.alanlar_bos_birakilamaz.tr()),
                           )));
                         } else {
                           Map<String, dynamic> eklenecakMap = {
@@ -134,12 +136,11 @@ class AliciBilgisiDuzenle extends ConsumerWidget {
                               barrierDismissible: true, // user must tap button!
                               builder: (BuildContext context) {
                                 return AlertDialog(
-                                  title: const Text('Hata Oluştu'),
-                                  content: const Text(
-                                      'Müşteri kaydı yapılırken hata oluştu, tekrar deneyin...'),
+                                  title: Text(LocaleKeys.hata_olustu.tr()),
+                                  content: Text(LocaleKeys.musteri_kaydi_yapilirken_hata_olustu_tekrar_deneyin.tr()),
                                   actions: <Widget>[
                                     TextButton(
-                                      child: const Text('Tamam'),
+                                      child: Text(LocaleKeys.tamam.tr()),
                                       onPressed: () {
                                         Navigator.of(context).pop();
                                       },
@@ -151,7 +152,7 @@ class AliciBilgisiDuzenle extends ConsumerWidget {
                           }
                         }
                       },
-                      child: const Text('KAYDET')))
+                      child: Text(LocaleKeys.kaydet.tr())))
             ],
           ),
         ),
