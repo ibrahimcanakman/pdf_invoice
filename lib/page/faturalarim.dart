@@ -8,6 +8,8 @@ import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 import 'package:mailer/smtp_server/hotmail.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdf_invoice/api/pdf_invoice1.dart';
+import 'package:pdf_invoice/api/pdf_invoice2.dart';
 import 'package:pdf_invoice/page/anasayfa.dart';
 import 'package:pdf_invoice/page/urun_ekleme_page.dart';
 
@@ -44,28 +46,10 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
 
   @override
   void initState() {
-    faturalariGetir();
+    //faturalariGetir();
     mailBilgisiGetir();
     super.initState();
   }
-
-  faturalariGetir() async {
-    //var value = await _databaseHelper.getir();
-    ref.read(saticiAdi.notifier).update((state) => auth.currentUser!.email!);
-    var gelenFaturalarSS = await _firestore
-        .collection(auth.currentUser!.email!)
-        .doc('saticiFirma')
-        .collection('faturalar')
-        .get();
-    var gelenFaturalarListesi = gelenFaturalarSS.docs;
-    gelenFaturalarListesi
-        .sort((a, b) => b.data()['createdAt'].compareTo(a.data()['createdAt']));
-
-    ref
-        .read(faturalarProvider.notifier)
-        .update((state) => gelenFaturalarListesi);
-  }
-
   /* saticiFirmaGetir() async {
     var saticiFirma = await _databaseHelper.getir();
     saticiFirmaAdi = saticiFirma.first['firmaAdi'].toString();
@@ -73,9 +57,6 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
 
   @override
   Widget build(BuildContext context) {
-    //faturalariGetir();
-    //saticiFirmaGetir();
-
     return WillPopScope(
       onWillPop: () {
         Navigator.pushAndRemoveUntil(
@@ -461,6 +442,23 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
     );
   }
 
+  faturalariGetir() async {
+    //var value = await _databaseHelper.getir();
+    ref.read(saticiAdi.notifier).update((state) => auth.currentUser!.email!);
+    var gelenFaturalarSS = await _firestore
+        .collection(auth.currentUser!.email!)
+        .doc('saticiFirma')
+        .collection('faturalar')
+        .get();
+    var gelenFaturalarListesi = gelenFaturalarSS.docs;
+    gelenFaturalarListesi
+        .sort((a, b) => b.data()['createdAt'].compareTo(a.data()['createdAt']));
+
+    ref
+        .read(faturalarProvider.notifier)
+        .update((state) => gelenFaturalarListesi);
+  }
+
   void pdfGoruntule() async {
     var saticiBilgileriSS = await _firestore
         .collection(ref.watch(saticiAdi).toString())
@@ -480,13 +478,14 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
         address: saticiBilgileriMap['adresi'],
         email: saticiBilgileriMap['email'],
         phone: saticiBilgileriMap['telefon'],
+        firmaLogo: saticiBilgileriMap['firmaLogo'],
       ),
       customer: Customer(
-        name: ref.watch(seciliFaturaProvider)['aliciAdi'],
-        address: ref.watch(seciliFaturaProvider)['aliciAdresi'],
-        email: ref.watch(seciliFaturaProvider)['aliciEmail'],
-        phone: ref.watch(seciliFaturaProvider)['aliciTelefon'],
-      ),
+          name: ref.watch(seciliFaturaProvider)['aliciAdi'],
+          address: ref.watch(seciliFaturaProvider)['aliciAdresi'],
+          email: ref.watch(seciliFaturaProvider)['aliciEmail'],
+          phone: ref.watch(seciliFaturaProvider)['aliciTelefon'],
+          imza: ref.watch(seciliFaturaProvider)['imza']),
       info: InvoiceInfo(
         date: ref.watch(seciliFaturaProvider)['faturaTarihi'],
         description: ref.watch(seciliFaturaProvider)['aciklama'],
@@ -502,13 +501,34 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
       ],
     );
 
-    final pdfFile = await PdfSayfaFormati.generate(
+    /* final pdfFile = await PdfSayfaFormati.generate(
         invoice,
         ref.watch(seciliFaturaProvider)['faturaTarihi'],
         ref.watch(seciliFaturaProvider)['faturaNo'],
         bankaBilgileri);
 
-    PdfApi.openFile(pdfFile);
+    PdfApi.openFile(pdfFile); */
+    switch (ref.watch(faturaFormatProvider)) {
+      case 'Format1':
+        await PdfFatura1()
+            .createPDF(invoice, ref.watch(seciliFaturaProvider)['faturaNo'],
+                ref.watch(seciliFaturaProvider)['faturaTarihi'], bankaBilgileri)
+            .then((value) async {
+          await PdfFatura1().saveAndLaunchFile(
+              value, '${ref.watch(seciliFaturaProvider)['faturaNo']}.pdf');
+        });
+        break;
+      case 'Format2':
+        await PdfFatura2()
+            .createPDF(invoice, ref.watch(seciliFaturaProvider)['faturaNo'],
+                ref.watch(seciliFaturaProvider)['faturaTarihi'], bankaBilgileri)
+            .then((value) async {
+          await PdfFatura2().saveAndLaunchFile(
+              value, '${ref.watch(seciliFaturaProvider)['faturaNo']}.pdf');
+        });
+        break;
+      default:
+    }
   }
 
   void faturaDuzenle() async {
@@ -527,8 +547,8 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
     ref.read(gecerliMusteri.notifier).update((state) => {
           'adi': ref.watch(seciliFaturaProvider)['aliciAdi'],
           'adresi': ref.watch(seciliFaturaProvider)['aliciAdresi'],
-          'email': '',
-          'telefon': ''
+          'email': ref.watch(seciliFaturaProvider)['aliciEmail'],
+          'telefon': ref.watch(seciliFaturaProvider)['aliciTelefon']
         });
     ref
         .read(faturaNoProvider.notifier)
@@ -683,7 +703,7 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
                           .collection(ref.watch(saticiAdi))
                           .doc('saticiFirma')
                           .collection('faturalar')
-                          .doc(ref.watch(seciliFaturaProvider)['faturaNo'])
+                          .doc(ref.watch(seciliFaturaProvider)['faturaDocID'])
                           .delete();
                       faturalariGetir();
                       Navigator.pop(context);
@@ -823,12 +843,14 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
           address: saticiBilgileriMap['adresi'],
           email: saticiBilgileriMap['email'],
           phone: saticiBilgileriMap['telefon'],
+          firmaLogo: saticiBilgileriMap['firmaLogo'],
         ),
         customer: Customer(
           name: ref.watch(seciliFaturaProvider)['aliciAdi'],
           address: ref.watch(seciliFaturaProvider)['aliciAdresi'],
           email: ref.watch(seciliFaturaProvider)['aliciEmail'],
           phone: ref.watch(seciliFaturaProvider)['aliciTelefon'],
+          imza: ref.watch(seciliFaturaProvider)['imza'],
         ),
         info: InvoiceInfo(
           date: ref.watch(seciliFaturaProvider)['faturaTarihi'],
@@ -844,7 +866,34 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
             ),
         ],
       );
-      final pdfFile = await PdfSayfaFormati.documentGenerate(
+      switch (ref.watch(faturaFormatProvider)) {
+        case 'Format1':
+          await PdfFatura1()
+              .createPDF(
+                  invoice,
+                  ref.watch(seciliFaturaProvider)['faturaNo'],
+                  ref.watch(seciliFaturaProvider)['faturaTarihi'],
+                  bankaBilgileri)
+              .then((value) async {
+            await PdfFatura1().saveFile(
+                value, '${ref.watch(seciliFaturaProvider)['faturaNo']}.pdf');
+          });
+          break;
+        case 'Format2':
+          await PdfFatura2()
+              .createPDF(
+                  invoice,
+                  ref.watch(seciliFaturaProvider)['faturaNo'],
+                  ref.watch(seciliFaturaProvider)['faturaTarihi'],
+                  bankaBilgileri)
+              .then((value) async {
+            await PdfFatura2().saveFile(
+                value, '${ref.watch(seciliFaturaProvider)['faturaNo']}.pdf');
+          });
+          break;
+        default:
+      }
+      /* final pdfFile = await PdfSayfaFormati.documentGenerate(
           invoice,
           ref.watch(seciliFaturaProvider)['faturaTarihi'],
           ref.watch(seciliFaturaProvider)['faturaNo'],
@@ -852,7 +901,11 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
 
       final appDocumentDir = await getApplicationDocumentsDirectory();
       final filePath = appDocumentDir.path +
-          '/${ref.watch(seciliFaturaProvider)['faturaNo']}.pdf';
+          '/${ref.watch(seciliFaturaProvider)['faturaNo']}.pdf'; */
+
+      final path = (await getExternalStorageDirectory())!.path;
+      final filePath =
+          path + '/${ref.watch(seciliFaturaProvider)['faturaNo']}.pdf';
 
       final smtpServer = hotmail(ref.watch(mailBilgisiProvider)['email'],
           ref.watch(mailBilgisiProvider)['pass']);

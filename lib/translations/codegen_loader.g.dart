@@ -101,7 +101,25 @@ class CodegenLoader extends AssetLoader{
   "dogrulama_kodu": "Verification Code",
   "uygulamayi_kullanabilmek_icin_dogrulama_kodu_girmelisiniz": "You must enter a verification code to use the application.",
   "uygulama_dogrulama": "Application Verification",
-  "kayit_esnasinda_mail_adresinize_gonderilen": "Verify your account from the verification link sent to your e-mail address during registration..."
+  "kayit_esnasinda_mail_adresinize_gonderilen": "Verify your account from the verification link sent to your e-mail address during registration...",
+  "fatura_numarasi_bicimi": "Invoice Number Format",
+  "artan_sayi": "İncreasing Number",
+  "tarih_sayi": "Date + Number",
+  "fatura_formati": "İnvoice Format",
+  "firma_logosu_yukle": "Upload Company Logo",
+  "logo_yukleme_mesaji": "*** To upload a logo, click inside the designated area and select your logo. To change the selected logo, click on the image that appears in the same area again and select your logo. Click the \"Remove Logo\" button to completely cancel and remove the logo.",
+  "logoyu_kaldir": "Remove Logo",
+  "fatura_numarasi": "İnvoice Number",
+  "kaydet_ve_devam_et": "Save and Continue",
+  "aciklama_ve_imza_ekle": "Add Description and Signature",
+  "aciklamalar_getiriliyor": "Bringing Explanations",
+  "aciklama_sec": "Choose Description",
+  "yeni_aciklama_ekle": "Add New Description",
+  "bir_aciklama_secin": "Choose a Description",
+  "yeni_aciklama": "New Description",
+  "aciklamayi_ekle": "Add Description",
+  "temizle": "Clear",
+  "faturayi_kaydet": "Save Invoice"
 };
 static const Map<String,dynamic> tr = {
   "giris_ekrani": "Giriş Ekranı",
@@ -190,7 +208,25 @@ static const Map<String,dynamic> tr = {
   "dogrulama_kodu": "Doğrulama Kodu",
   "uygulamayi_kullanabilmek_icin_dogrulama_kodu_girmelisiniz": "Uygulamayı kullanabilmek için doğrulama kodu girmelisiniz.",
   "uygulama_dogrulama": "Uygulama Doğrulama",
-  "kayit_esnasinda_mail_adresinize_gonderilen": "Kayıt esnasında mail adresinize gönderilen doğrulama linkinden hesabınızı doğrulayın..."
+  "kayit_esnasinda_mail_adresinize_gonderilen": "Kayıt esnasında mail adresinize gönderilen doğrulama linkinden hesabınızı doğrulayın...",
+  "fatura_numarasi_bicimi": "Fatura Numarası Biçimi",
+  "artan_sayi": "Artan Sayı",
+  "tarih_sayi": "Tarih + Sayı",
+  "fatura_formati": "Fatura Formatı",
+  "firma_logosu_yukle": "Firma Logosu Yükle",
+  "logo_yukleme_mesaji": "*** Logo yüklemek için belirlenmiş alan içerisine tıklayın ve logonuzu seçin, seçili logoyu değiştirmek için tekrar aynı alan içinde görünen görsel üzerine tıklayıp logonuzu seçin. Logoyu komple iptal etmek ve kaldırmak için \"Logoyu Kaldır\" butonuna tıklayın.",
+  "logoyu_kaldir": "Logoyu Kaldır",
+  "fatura_numarasi": "Fatura Numarası",
+  "kaydet_ve_devam_et": "Kaydet ve Devam Et",
+  "aciklama_ve_imza_ekle": "Açıklama ve İmza Ekle",
+  "aciklamalar_getiriliyor": "Açıklamalar Getiriliyor",
+  "aciklama_sec": "Açıklama Seç",
+  "yeni_aciklama_ekle": "Yeni Açıklama Ekle",
+  "bir_aciklama_secin": "Bir Açıklama Seçin",
+  "yeni_aciklama": "Yeni Açıklama",
+  "aciklamayi_ekle": "Açıklamayı Ekle",
+  "temizle": "Temizle",
+  "faturayi_kaydet": "Faturayı Kaydet"
 };
 static const Map<String, Map<String,dynamic>> mapLocales = {"en": en, "tr": tr};
 }

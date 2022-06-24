@@ -88,5 +88,23 @@ abstract class  LocaleKeys {
   static const uygulamayi_kullanabilmek_icin_dogrulama_kodu_girmelisiniz = 'uygulamayi_kullanabilmek_icin_dogrulama_kodu_girmelisiniz';
   static const uygulama_dogrulama = 'uygulama_dogrulama';
   static const kayit_esnasinda_mail_adresinize_gonderilen = 'kayit_esnasinda_mail_adresinize_gonderilen';
+  static const fatura_numarasi_bicimi = 'fatura_numarasi_bicimi';
+  static const artan_sayi = 'artan_sayi';
+  static const tarih_sayi = 'tarih_sayi';
+  static const fatura_formati = 'fatura_formati';
+  static const firma_logosu_yukle = 'firma_logosu_yukle';
+  static const logo_yukleme_mesaji = 'logo_yukleme_mesaji';
+  static const logoyu_kaldir = 'logoyu_kaldir';
+  static const fatura_numarasi = 'fatura_numarasi';
+  static const kaydet_ve_devam_et = 'kaydet_ve_devam_et';
+  static const aciklama_ve_imza_ekle = 'aciklama_ve_imza_ekle';
+  static const aciklamalar_getiriliyor = 'aciklamalar_getiriliyor';
+  static const aciklama_sec = 'aciklama_sec';
+  static const yeni_aciklama_ekle = 'yeni_aciklama_ekle';
+  static const bir_aciklama_secin = 'bir_aciklama_secin';
+  static const yeni_aciklama = 'yeni_aciklama';
+  static const aciklamayi_ekle = 'aciklamayi_ekle';
+  static const temizle = 'temizle';
+  static const faturayi_kaydet = 'faturayi_kaydet';
 
 }

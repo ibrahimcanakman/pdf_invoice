@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -103,10 +105,20 @@ final faturaNoBicimProvider = StateProvider<String?>((ref) => null,);
 final tarihDatetimeProvider = StateProvider<DateTime>((ref) => DateTime.now(),);
 
 //firebaseye yazılacak faturanın döküman adını tutan provider
-final faturaDocAdiProvider = StateProvider<String?>((ref) => null,);
+//final faturaDocAdiProvider = StateProvider<String?>((ref) => null,);
 
 //firebaseye yazılacak fatura no map değeri tutan provider
 final yazilacakFaturaNoProvider = StateProvider<Map<String, dynamic>?>((ref) => null,);
 
 //yazılacak faturanın map halini tutan Provider
 final yazilacakFaturaMapProvider = StateProvider<Map<String, dynamic>?>((ref) => null,);
+
+//imza uint8list verisi tutan provider
+final imzaProvider = StateProvider<String?>((ref) => null,);
+
+//firma logosu yüklerken galeriden seçilen resmi tutan uint8list provider
+final logoProvider = StateProvider<Uint8List?>((ref) => null,);
+
+//firebasede tutulan faturanoBicim değişkenini tutan provider
+final faturaFormatProvider = StateProvider<String>((ref) => 'Format1',);
+final faturaFormatIndexProvider = StateProvider<int?>((ref) => null,);

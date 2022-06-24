@@ -72,8 +72,8 @@ class _TarihSecState extends ConsumerState<TarihSec> {
                       ref
                           .read(faturaNoProvider.notifier)
                           .update((state) => '${value['artanSayi'].length}');
-                      ref.read(faturaDocAdiProvider.notifier).update((state) =>
-                          'S-$faturaNo-${value['artanSayi'].length}');
+                      /* ref.read(faturaDocAdiProvider.notifier).update((state) =>
+                          'S-$faturaNo-${value['artanSayi'].length}'); */
                       for (var i = 0; i < value['artanSayi'].length + 1; i++) {
                         artanSayi.add(i);
                       }
@@ -81,9 +81,9 @@ class _TarihSecState extends ConsumerState<TarihSec> {
                       ref
                           .read(faturaNoProvider.notifier)
                           .update((state) => '0');
-                      ref
+                      /* ref
                           .read(faturaDocAdiProvider.notifier)
-                          .update((state) => 'S-$faturaNo-0');
+                          .update((state) => 'S-$faturaNo-0'); */
                       artanSayi = [0];
                     }
                     ref.read(yazilacakFaturaNoProvider.notifier).update((state) => {'artanSayi': artanSayi});
@@ -91,9 +91,9 @@ class _TarihSecState extends ConsumerState<TarihSec> {
                   } else if (value == null &&
                       ref.watch(faturaNoBicimProvider) == 'Artan Sayı') {
                     ref.read(faturaNoProvider.notifier).update((state) => '0');
-                    ref
+                    /* ref
                         .read(faturaDocAdiProvider.notifier)
-                        .update((state) => 'S-$faturaNo-0');
+                        .update((state) => 'S-$faturaNo-0'); */
                     artanSayi = [0];
                     ref.read(yazilacakFaturaNoProvider.notifier).update((state) => {'artanSayi': artanSayi});
                     //faturaNoYazArtanSayi(artanSayi);
@@ -102,8 +102,8 @@ class _TarihSecState extends ConsumerState<TarihSec> {
                     if (value.containsKey('tarihSayi')) {
                       ref.read(faturaNoProvider.notifier).update(
                           (state) => '$faturaNo-${value['tarihSayi'].length}');
-                      ref.read(faturaDocAdiProvider.notifier).update((state) =>
-                          'TS-$faturaNo-${value['tarihSayi'].length}');
+                      /* ref.read(faturaDocAdiProvider.notifier).update((state) =>
+                          'TS-$faturaNo-${value['tarihSayi'].length}'); */
 
                       for (var i = 0; i < value['tarihSayi'].length + 1; i++) {
                         tarihSayi.add(i);
@@ -116,9 +116,9 @@ class _TarihSecState extends ConsumerState<TarihSec> {
                       ref
                           .read(faturaNoProvider.notifier)
                           .update((state) => '$faturaNo-0');
-                      ref
+                      /* ref
                           .read(faturaDocAdiProvider.notifier)
-                          .update((state) => 'TS-$faturaNo-0');
+                          .update((state) => 'TS-$faturaNo-0'); */
 
                       tarihSayi = [0];
                       //ref.read(tarihSayiProvider.notifier).update((state) => [0]);
@@ -131,9 +131,9 @@ class _TarihSecState extends ConsumerState<TarihSec> {
                     ref
                         .read(faturaNoProvider.notifier)
                         .update((state) => '$faturaNo-0');
-                    ref
+                    /* ref
                         .read(faturaDocAdiProvider.notifier)
-                        .update((state) => 'TS-$faturaNo-0');
+                        .update((state) => 'TS-$faturaNo-0'); */
                     tarihSayi = [0];
                     ref.read(yazilacakFaturaNoProvider.notifier).update((state) => {'tarihSayi': tarihSayi});
                     //faturaNoYazTarihSayi(tarihSayi);
@@ -150,10 +150,10 @@ class _TarihSecState extends ConsumerState<TarihSec> {
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Row(
               children: [
-                const Expanded(
+                Expanded(
                     child: Text(
-                  'Fatura No:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  LocaleKeys.fatura_numarasi.tr(),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 )),
                 Expanded(
                   flex: 2,
@@ -184,7 +184,7 @@ class _TarihSecState extends ConsumerState<TarihSec> {
                       builder: (context) => const DescriptionAddPage(),
                     ));
               },
-              child: const Text('Kaydet ve Devam Et')),
+              child: Text(LocaleKeys.kaydet_ve_devam_et.tr())),
           const Spacer(
             flex: 2,
           )

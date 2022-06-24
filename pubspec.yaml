@@ -48,6 +48,9 @@ dependencies:
   firebase_auth: ^3.3.14
   email_validator: ^2.0.1
   syncfusion_flutter_signaturepad: ^20.1.58
+  syncfusion_flutter_pdf: ^20.1.58-beta
+  image_picker: ^0.8.5+3
+  carousel_slider: ^4.1.1
   
 
 dev_dependencies:
@@ -76,12 +79,24 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  fonts:
+    - family: RobotoMedium
+      fonts:
+        - asset: assets/fonts/Roboto-Medium.ttf
+    - family: RobotoBold
+      fonts:
+        - asset: assets/fonts/Roboto-Bold.ttf
+    - family: RobotoBlack
+      fonts:
+        - asset: assets/fonts/Roboto-Black.ttf
 
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/
     - assets/translations/
     - assets/icon/
+    - assets/fonts/
+    - assets/invoiceformats/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

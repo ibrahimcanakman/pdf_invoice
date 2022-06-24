@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -350,11 +351,15 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
                         ref.watch(yetkiSeviyesiProvider)! < 2) {
                       await dogrulamaPenceresi(context);
                     } else {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const Faturalarim(),
-                          ));
+                      saticiBilgileriniGetir().then((value) {
+                        faturalariGetir().then((value) {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const Faturalarim(),
+                              ));
+                        });
+                      });
                     }
                   },
                   child: Text(
@@ -372,11 +377,13 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
                           ref.watch(yetkiSeviyesiProvider)! < 2) {
                         await dogrulamaPenceresi(context);
                       } else {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const AyarlarSayfasi(),
-                            ));
+                        saticiBilgileriniGetir().then((value) {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AyarlarSayfasi(),
+                              ));
+                        });
                       }
                       /* Navigator.push(
                           context,
@@ -520,6 +527,65 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
         await _firestore.doc('${_auth.currentUser!.email}/saticiFirma').get();
     int yetkiSeviyesi = gelenBilgi.data()!['yetkiSeviyesi'];
     ref.read(yetkiSeviyesiProvider.notifier).update((state) => yetkiSeviyesi);
+    //firebaseden logo Stringi okunum providera atma
+    String? logoString = gelenBilgi.data()!['firmaLogo'];
+    if (logoString!.isNotEmpty) {
+      var logolist = logoString.codeUnits;
+      final logo = Uint8List.fromList(logolist);
+      ref.read(logoProvider.notifier).update((state) => logo);
+    }
+
     //return yetkiSeviyesi;
+  }
+
+  Future<void> saticiBilgileriniGetir() async {
+    await _firestore
+        .doc('${_auth.currentUser!.email}/saticiFirma')
+        .get()
+        .then((value) async {
+      var bilgiler = value.data();
+      if (bilgiler!['firmaLogo'].isEmpty) {
+        ref.read(logoProvider.notifier).update((state) => null);
+      } else {
+        var dataa = bilgiler['firmaLogo'].codeUnits;
+        final data = Uint8List.fromList(dataa);
+        var logo =
+            data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+        ref.read(logoProvider.notifier).update((state) => logo);
+      }
+
+      ref
+          .read(faturaFormatProvider.notifier)
+          .update((state) => bilgiler['faturaFormati']);
+      ref
+          .read(faturaFormatIndexProvider.notifier)
+          .update((state) => bilgiler['faturaFormati'] == 'Format1' ? 0 : 1);
+      await _firestore
+          .doc(
+              '${_auth.currentUser!.email}/saticiFirma/faturaNoBicim/faturaNoBicim')
+          .get()
+          .then((value) {
+        ref
+            .read(faturaNoBicimProvider.notifier)
+            .update((state) => value.data()!['faturaNoBicim']);
+      });
+    });
+  }
+
+  Future<void> faturalariGetir() async {
+    //var value = await _databaseHelper.getir();
+    ref.read(saticiAdi.notifier).update((state) => _auth.currentUser!.email!);
+    var gelenFaturalarSS = await _firestore
+        .collection(_auth.currentUser!.email!)
+        .doc('saticiFirma')
+        .collection('faturalar')
+        .get();
+    var gelenFaturalarListesi = gelenFaturalarSS.docs;
+    gelenFaturalarListesi
+        .sort((a, b) => b.data()['createdAt'].compareTo(a.data()['createdAt']));
+
+    ref
+        .read(faturalarProvider.notifier)
+        .update((state) => gelenFaturalarListesi);
   }
 }

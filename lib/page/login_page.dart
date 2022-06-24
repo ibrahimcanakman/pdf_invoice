@@ -21,8 +21,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final TextEditingController _emailGirisController = TextEditingController();
   final TextEditingController _sifreGirisController = TextEditingController();
 
-  
-
   final TextEditingController _emailKayitController = TextEditingController();
   final TextEditingController _sifreKayitController = TextEditingController();
   final TextEditingController _saticiAdiController = TextEditingController();
@@ -55,32 +53,32 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (user == null) {
         debugPrint('User oturumu kapalı!');
       } else {
-          debugPrint(
-              'User oturum açık ${user.email} ve e-mail durumu ${user.emailVerified}');
-          
-          if (user.emailVerified) {
-            if (mounted) {
-              Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AnaSayfa(),
-                  ),
-                  (route) => true);
-            }
-          } else if (!user.emailVerified) {
-            showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    content: Text(LocaleKeys.mail_dogrulama_istek_mesaji.tr()),
-                    actions: [
-                      TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text(LocaleKeys.tamam.tr()))
-                    ],
-                  );
-                });
+        debugPrint(
+            'User oturum açık ${user.email} ve e-mail durumu ${user.emailVerified}');
+
+        if (user.emailVerified) {
+          if (mounted) {
+            Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AnaSayfa(),
+                ),
+                (route) => true);
           }
+        } else if (!user.emailVerified) {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  content: Text(LocaleKeys.mail_dogrulama_istek_mesaji.tr()),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(LocaleKeys.tamam.tr()))
+                  ],
+                );
+              });
+        }
       }
     });
   }
@@ -293,6 +291,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       },
                       decoration: InputDecoration(
                           label: Text(LocaleKeys.banka_hesap_adi.tr()),
+                          hintText: 'Sadece Banka Hesap Adını Yazın...',
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15))),
                     ),
@@ -309,6 +308,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       },
                       decoration: InputDecoration(
                           label: Text(LocaleKeys.banka_sort_kodu.tr()),
+                          hintText: 'Sadece Banka Sort Kodu Yazın...',
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15))),
                     ),
@@ -325,6 +325,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       },
                       decoration: InputDecoration(
                           label: Text(LocaleKeys.banka_hesap_numarasi.tr()),
+                          hintText: 'Sadece Banka Hesap Numarası Yazın...',
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15))),
                     ),
@@ -406,11 +407,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   void loginUserEmailandPassword() async {
     try {
-      
-        var _userCredential = await auth.signInWithEmailAndPassword(
+      var _userCredential = await auth.signInWithEmailAndPassword(
           email: _emailGirisController.text.trim(),
           password: _sifreGirisController.text.trim());
-        kodlariGetir();
+      kodlariGetir().then((value) {
         //int yetkiSeviyesi = ref.watch(yetkiSeviyesiProvider)!;
         debugPrint(_userCredential.toString());
         var _myUser = _userCredential.user;
@@ -419,7 +419,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  content: Text(LocaleKeys.kayit_esnasinda_mail_adresinize_gonderilen.tr()),
+                  content: Text(LocaleKeys
+                      .kayit_esnasinda_mail_adresinize_gonderilen
+                      .tr()),
                   actions: [
                     TextButton(
                         onPressed: () {
@@ -432,12 +434,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         } else {
           debugPrint(
               'kullanıcının maili onaylanmış ilgili sayfaya gidebilir...');
-          Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AnaSayfa(),
-              ),
-              (route) => false);
+          
+            Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AnaSayfa(),
+                ),
+                (route) => false);
+          
+
           /* Navigator.push(
             context,
             MaterialPageRoute(
@@ -445,10 +450,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             )); */
         }
 
-      /* await kullaniciBilgileriGetir();
+        /* await kullaniciBilgileriGetir();
       Navigator.of(context).pushReplacement(MaterialPageRoute(
         builder: (context) => MyHomePage(),
       )); */
+      });
     } on FirebaseAuthException catch (e) {
       debugPrint(e.code);
       if (e.code == 'user-not-found') {
@@ -493,7 +499,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       'bankaAccountName': _bankaAccountNameController.text.trim(),
       'bankaSortCode': _bankaSortCodeController.text.trim(),
       'bankaAccountNumber': _bankaAccountNumberController.text.trim(),
-      'yetkiSeviyesi': 1
+      'yetkiSeviyesi': 1,
+      'firmaLogo':'',
+      'faturaFormati':'Format1'
     };
     //await _databaseHelper.kaydet(_emailKayitController.text);
     Future(
@@ -503,11 +511,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             .doc('saticiFirma')
             .set(firmaBilgileri);
         _firestore
-        .collection(_emailKayitController.text.trim())
-        .doc('saticiFirma')
-        .collection('faturaNoBicim')
-        .doc('faturaNoBicim')
-        .set({'faturaNoBicim': 'Tarih + Sayı'});
+            .collection(_emailKayitController.text.trim())
+            .doc('saticiFirma')
+            .collection('faturaNoBicim')
+            .doc('faturaNoBicim')
+            .set({'faturaNoBicim': 'Tarih + Sayı'});
       },
     ).then((value) {
       ref
@@ -613,15 +621,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
   }
 
-  
-
-  void kodlariGetir() async {
+  Future<void> kodlariGetir() async {
     var kodlar = await _firestore.doc('kodlar/kodlar').get();
     List<dynamic> kodlarListesi = kodlar.data()!['kodlar'];
     ref
         .read(dogrulamaKodlariProvider.notifier)
         .update((state) => kodlarListesi);
   }
-
-  
 }
