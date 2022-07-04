@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdf_invoice/constants/description_controllers.dart';
@@ -16,8 +18,17 @@ class DescriptionAddPage extends ConsumerStatefulWidget {
       _DescriptionAddPageState();
 }
 
+//final _formkey = GlobalKey<FormState>();
+
 class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    urunleriGetir();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -182,11 +193,16 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                                 flex: 3,
                                 //width: MediaQuery.of(context).size.width / 4,
                                 child: Center(
-                                  child: Text(
-                                    ref.watch(urunListesiProvider)[index]
-                                        ['urunAdi'],
-                                    overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.center,
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Text(
+                                      ref.watch(urunListesiProvider)[index]
+                                          ['urunAdi'],
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                      style:
+                                          Theme.of(context).textTheme.headline6,
+                                    ),
                                   ),
                                 )),
                             Expanded(
@@ -365,10 +381,7 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                           TextEditingController();
                       TextEditingController urunBirim1 = TextEditingController();
                       TextEditingController urunKDV1 = TextEditingController(); */
-                            if (urunAdi.text.trim().isNotEmpty &&
-                                urunMiktari.text.trim().isNotEmpty &&
-                                urunBirimi.text.trim().isNotEmpty &&
-                                urunKDV.text.trim().isNotEmpty) {
+                            if (formkey.currentState!.validate()) {
                               var eklenenUrun = {
                                 'urunAdi': urunAdi.text.trim(),
                                 'urunMiktari': urunMiktari.text.trim(),
@@ -386,7 +399,7 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                               urunMiktari.text = '';
                               urunBirimi.text = '';
                               urunKDV.text = '';
-                            } else {
+                            } /* else {
                               ScaffoldMessenger.of(context)
                                   .showSnackBar(SnackBar(
                                       content: Padding(
@@ -397,13 +410,17 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                                 child: Text(
                                     LocaleKeys.alanlar_bos_birakilamaz.tr()),
                               )));
-                            }
+                            } */
                           },
                           child: const Icon(Icons.add),
                         ),
                       ),
                       //Ürün girişi textformfieldlar
-                      const Expanded(child: DescriptionWidget()),
+                      Expanded(
+                        child: DescriptionWidget(
+                          ref: ref,
+                        ),
+                      )
                     ],
                   ),
                   //En alttaki kaydet butonu
@@ -414,6 +431,24 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                         child: ElevatedButton(
                             onPressed: () {
                               if (ref.watch(urunListesiProvider).isNotEmpty) {
+                                if (formkey.currentState!.validate()) {
+                                  var eklenenUrun = {
+                                    'urunAdi': urunAdi.text.trim(),
+                                    'urunMiktari': urunMiktari.text.trim(),
+                                    'urunBirimi': urunBirimi.text.trim(),
+                                    'urunKDV': urunKDV.text.trim()
+                                  };
+
+                                  ref.read(urunListesiProvider.notifier).update(
+                                      (state) => [...state, eklenenUrun]);
+                                  ref
+                                      .read(toplamDegerleriProvider.notifier)
+                                      .update((state) => toplamHesapla(ref));
+                                  urunAdi.text = '';
+                                  urunMiktari.text = '';
+                                  urunBirimi.text = '';
+                                  urunKDV.text = '';
+                                }
                                 faturayiFirebaseYazmakIcinMap(ref);
                                 /* Navigator.push(
                                     context,
@@ -507,7 +542,7 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
 
   void faturayiFirebaseYazmakIcinMap(WidgetRef ref) async {
     Map<String, dynamic> eklenecekFatura = {
-      'createdAt':ref.watch(tarihDatetimeProvider),
+      'createdAt': ref.watch(tarihDatetimeProvider),
       'aliciAdi': ref.watch(gecerliMusteri)['adi'],
       'aliciAdresi': ref.watch(gecerliMusteri)['adresi'],
       'aliciEmail': ref.watch(gecerliMusteri)['email'],
@@ -519,9 +554,10 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
       'urunler': [for (var item in ref.watch(urunListesiProvider)) item]
     };
 
-    ref.read(yazilacakFaturaMapProvider.notifier).update((state) => eklenecekFatura);
+    ref
+        .read(yazilacakFaturaMapProvider.notifier)
+        .update((state) => eklenecekFatura);
 
-    
     ref.read(urunListesiProvider.notifier).update((state) => []);
   }
 
@@ -534,84 +570,368 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
     }
     ref.read(urunListesiProvider.notifier).update((state) => guncelUrunListesi);
   }
+
+  Future<void> urunleriGetir() async {
+    var urunler = await _firestore
+        .collection(_auth.currentUser!.email!)
+        .doc('saticiFirma')
+        .collection('urunler')
+        .doc('urunler')
+        .get();
+    if (urunler.data() == null) {
+      ref
+          .read(urunlerProvider.notifier)
+          .update((state) => ['', LocaleKeys.yeni_urun_ekle.tr()]);
+    } else {
+      ref
+          .read(urunlerProvider.notifier)
+          .update((state) => [...urunler.data()!['urunler'], LocaleKeys.yeni_urun_ekle.tr()]);
+    }
+
+    /* var urunler = await _databaseHelper.urunlerigetir();
+    if (urunler.isEmpty) {
+      ref.read(urunlerProvider.notifier).update((state) => [
+            ...urunler,
+            {'urunAdi': ''},
+            {'urunAdi': 'Yeni Ürün Ekle'}
+          ]);
+    } else {
+      ref.read(urunlerProvider.notifier).update((state) => [
+            ...urunler,
+            {'urunAdi': 'Yeni Ürün Ekle'}
+          ]);
+    } */
+  }
 }
 
-class DescriptionWidget extends StatelessWidget {
-  const DescriptionWidget({
-    Key? key,
-  }) : super(key: key);
+const double _kItemExtent = 50.0;
+
+class DescriptionWidget extends StatefulWidget {
+  DescriptionWidget({Key? key, required this.ref}) : super(key: key);
+  WidgetRef ref;
+
+  @override
+  State<DescriptionWidget> createState() => _DescriptionWidgetState();
+}
+
+class _DescriptionWidgetState extends State<DescriptionWidget> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final double _kItemExtent = 50.0;
+  int _seciliUrun = 0;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          height: MediaQuery.of(context).size.height * 0.01,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Form(
-                child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.35,
-              child: TextFormField(
-                controller: urunAdi,
-                decoration: InputDecoration(
-                    label: Text(LocaleKeys.urun_adi.tr()),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15))),
+    return Form(
+      key: formkey,
+      child: Column(
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.01,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.35,
+                child: TextFormField(
+                  onTap: () {
+                    _showDialog(
+                      CupertinoPicker(
+                        magnification: 1,
+                        squeeze: 1.2,
+                        useMagnifier: true,
+                        itemExtent: _kItemExtent,
+                        onSelectedItemChanged: (int selectedItem) {
+                          setState(() {
+                            _seciliUrun = selectedItem;
+                          });
+                          widget.ref.read(seciliUrunProvider.notifier).update(
+                              (state) => widget.ref
+                                  .watch(urunlerProvider)[selectedItem]);
+                          urunAdi.text = widget.ref.watch(seciliUrunProvider) !=
+                                  null
+                              ? widget.ref.watch(seciliUrunProvider)!
+                              : widget.ref.watch(urunlerProvider)[_seciliUrun];
+                          if (widget.ref.watch(urunlerProvider)[_seciliUrun] ==
+                              LocaleKeys.yeni_urun_ekle.tr()) {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: Text(LocaleKeys.yeni_urun_ekle.tr()),
+                                content: Form(
+                                    key: yeniUrunFormKey,
+                                    child: TextFormField(
+                                      controller: yeniUrunController,
+                                      decoration: InputDecoration(
+                                          label: Text(LocaleKeys.yeni_urun_adi.tr()),
+                                          border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20))),
+                                      validator: (value) {
+                                        if (value!.isEmpty) {
+                                          return LocaleKeys.urun_ismi_bos_birakilamaz.tr();
+                                        } else {
+                                          return null;
+                                        }
+                                      },
+                                    )),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () {
+                                        yeniUrunController.clear();
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text(LocaleKeys.vazgec.tr())),
+                                  ElevatedButton(
+                                      onPressed: () async {
+                                        if (yeniUrunFormKey.currentState!
+                                            .validate()) {
+                                          var liste =
+                                              widget.ref.watch(urunlerProvider);
+                                          liste.contains('')
+                                              ? liste.remove('')
+                                              : null;
+                                          liste.contains(LocaleKeys.yeni_urun_ekle.tr())
+                                              ? liste.remove(LocaleKeys.yeni_urun_ekle.tr())
+                                              : null;
+
+                                          await _firestore
+                                              .collection(
+                                                  _auth.currentUser!.email!)
+                                              .doc('saticiFirma')
+                                              .collection('urunler')
+                                              .doc('urunler')
+                                              .set({
+                                            'urunler': [
+                                              ...liste,
+                                              yeniUrunController.text.trim()
+                                            ]
+                                          }).then((value) async {
+                                            var urunler = await _firestore
+                                                .collection(
+                                                    _auth.currentUser!.email!)
+                                                .doc('saticiFirma')
+                                                .collection('urunler')
+                                                .doc('urunler')
+                                                .get();
+                                            widget.ref
+                                                .read(urunlerProvider.notifier)
+                                                .update((state) => [
+                                                      ...urunler
+                                                          .data()!['urunler'],
+                                                      LocaleKeys.yeni_urun_ekle.tr()
+                                                    ]);
+                                            setState(() {
+                                              _seciliUrun = widget.ref
+                                                      .watch(urunlerProvider)
+                                                      .length -
+                                                  2;
+                                            });
+                                            widget.ref
+                                                .read(
+                                                    seciliUrunProvider.notifier)
+                                                .update((state) => widget.ref
+                                                        .watch(urunlerProvider)[
+                                                    _seciliUrun]);
+                                            urunAdi.text = widget.ref.watch(
+                                                        seciliUrunProvider) !=
+                                                    null
+                                                ? widget.ref
+                                                    .watch(seciliUrunProvider)!
+                                                : widget.ref
+                                                        .watch(urunlerProvider)[
+                                                    _seciliUrun];
+                                            Navigator.pop(context);
+                                            Navigator.pop(context);
+                                            yeniUrunController.clear();
+                                          });
+
+                                          /* await _databaseHelper
+                                              .urunekle(yeniUrunController.text
+                                                  .trim())
+                                              .then((value) async {
+                                            var urunler = await _databaseHelper
+                                                .urunlerigetir();
+                                            widget.ref
+                                                .read(urunlerProvider.notifier)
+                                                .update((state) => [
+                                                      ...urunler,
+                                                      {
+                                                        'urunAdi':
+                                                            'Yeni Ürün Ekle'
+                                                      }
+                                                    ]);
+                                            setState(() {
+                                              _seciliUrun = urunler.length - 1;
+                                            });
+                                            widget.ref
+                                                .read(
+                                                    seciliUrunProvider.notifier)
+                                                .update((state) => widget.ref
+                                                        .watch(urunlerProvider)[
+                                                    selectedItem]['urunAdi']);
+                                            urunAdi.text = widget.ref.watch(
+                                                        seciliUrunProvider) !=
+                                                    null
+                                                ? widget.ref
+                                                    .watch(seciliUrunProvider)!
+                                                : widget.ref
+                                                        .watch(urunlerProvider)[
+                                                    _seciliUrun]['urunAdi'];
+                                            Navigator.pop(context);
+                                            Navigator.pop(context);
+                                            yeniUrunController.clear();
+                                          }); */
+                                        }
+                                      },
+                                      child: Text(LocaleKeys.kaydet.tr())),
+                                ],
+                              ),
+                            );
+                          }
+                        },
+                        children: List<Widget>.generate(
+                            widget.ref.watch(urunlerProvider).length,
+                            (int index) {
+                          return Center(
+                            child: index ==
+                                    widget.ref.watch(urunlerProvider).length - 1
+                                ? Center(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.add),
+                                        Text(
+                                          widget.ref
+                                              .watch(urunlerProvider)[index],
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : SizedBox(
+                                    width: MediaQuery.of(context).size.width,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10),
+                                      child: Center(
+                                        child: Text(
+                                          widget.ref
+                                              .watch(urunlerProvider)[index],
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(fontSize: 15),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                          );
+                        }),
+                      ),
+                    );
+                  },
+                  controller: urunAdi,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                      label: Text(LocaleKeys.urun_adi.tr()),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15))),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return LocaleKeys.bos_birakilamaz.tr();
+                    } else {
+                      return null;
+                    }
+                  },
+                ),
               ),
-            )),
-            Form(
-                child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.35,
-              child: TextFormField(
-                keyboardType: TextInputType.number,
-                controller: urunMiktari,
-                decoration: InputDecoration(
-                    label: Text(LocaleKeys.urun_miktari.tr()),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15))),
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.35,
+                child: TextFormField(
+                  keyboardType: TextInputType.number,
+                  controller: urunMiktari,
+                  decoration: InputDecoration(
+                      label: Text(LocaleKeys.urun_miktari.tr()),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15))),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return LocaleKeys.bos_birakilamaz.tr();
+                    } else {
+                      return null;
+                    }
+                  },
+                ),
               ),
-            )),
-          ],
-        ),
-        SizedBox(
-          height: MediaQuery.of(context).size.height * 0.02,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Form(
-                child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.35,
-              child: TextFormField(
-                keyboardType: TextInputType.number,
-                controller: urunBirimi,
-                decoration: InputDecoration(
-                    label: Text(LocaleKeys.urun_birim_fiyati.tr()),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15))),
+            ],
+          ),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.02,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.35,
+                child: TextFormField(
+                  keyboardType: TextInputType.number,
+                  controller: urunBirimi,
+                  decoration: InputDecoration(
+                      label: Text(LocaleKeys.urun_birim_fiyati.tr()),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15))),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return LocaleKeys.bos_birakilamaz.tr();
+                    } else {
+                      return null;
+                    }
+                  },
+                ),
               ),
-            )),
-            Form(
-                child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.35,
-              child: TextFormField(
-                keyboardType: TextInputType.number,
-                controller: urunKDV,
-                decoration: InputDecoration(
-                    label: Text('${LocaleKeys.urun_kdv.tr()} %'),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15))),
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.35,
+                child: TextFormField(
+                  keyboardType: TextInputType.number,
+                  controller: urunKDV,
+                  decoration: InputDecoration(
+                      label: Text('${LocaleKeys.urun_kdv.tr()} %'),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15))),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return LocaleKeys.bos_birakilamaz.tr();
+                    } else {
+                      return null;
+                    }
+                  },
+                ),
               ),
-            )),
-          ],
-        ),
-        /* SizedBox(
-          height: MediaQuery.of(context).size.height * 0.02,
-        ), */
-      ],
+            ],
+          ),
+          /* SizedBox(
+            height: MediaQuery.of(context).size.height * 0.02,
+          ), */
+        ],
+      ),
     );
+  }
+
+  void _showDialog(Widget child) {
+    showCupertinoModalPopup<void>(
+        context: context,
+        builder: (BuildContext context) => Container(
+              height: 216,
+              padding: const EdgeInsets.only(top: 6.0),
+              margin: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              color: CupertinoColors.systemBackground.resolveFrom(context),
+              child: SafeArea(
+                top: false,
+                child: child,
+              ),
+            ));
   }
 }

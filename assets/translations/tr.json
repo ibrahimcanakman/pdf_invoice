@@ -103,5 +103,10 @@
   "yeni_aciklama": "Yeni Açıklama",
   "aciklamayi_ekle": "Açıklamayı Ekle",
   "temizle": "Temizle",
-  "faturayi_kaydet": "Faturayı Kaydet"
+  "faturayi_kaydet": "Faturayı Kaydet",
+  "fatura_aciklamasi": "Fatura Açıklaması",
+  "musteri_imzasi": "Müşteri İmzası",
+  "yeni_urun_ekle": "Yeni Ürün Ekle",
+  "yeni_urun_adi": "Yeni Ürün Adı",
+  "urun_ismi_bos_birakilamaz": "Ürün ismi boş bırakılamaz."
 }

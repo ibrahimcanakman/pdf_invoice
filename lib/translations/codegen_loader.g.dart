@@ -119,7 +119,12 @@ class CodegenLoader extends AssetLoader{
   "yeni_aciklama": "New Description",
   "aciklamayi_ekle": "Add Description",
   "temizle": "Clear",
-  "faturayi_kaydet": "Save Invoice"
+  "faturayi_kaydet": "Save Invoice",
+  "fatura_aciklamasi": "Invoice Description",
+  "musteri_imzasi": "Customer Signature",
+  "yeni_urun_ekle": "Add New Product",
+  "yeni_urun_adi": "New Product Name",
+  "urun_ismi_bos_birakilamaz": "The product name cannot be left blank."
 };
 static const Map<String,dynamic> tr = {
   "giris_ekrani": "Giriş Ekranı",
@@ -226,7 +231,12 @@ static const Map<String,dynamic> tr = {
   "yeni_aciklama": "Yeni Açıklama",
   "aciklamayi_ekle": "Açıklamayı Ekle",
   "temizle": "Temizle",
-  "faturayi_kaydet": "Faturayı Kaydet"
+  "faturayi_kaydet": "Faturayı Kaydet",
+  "fatura_aciklamasi": "Fatura Açıklaması",
+  "musteri_imzasi": "Müşteri İmzası",
+  "yeni_urun_ekle": "Yeni Ürün Ekle",
+  "yeni_urun_adi": "Yeni Ürün Adı",
+  "urun_ismi_bos_birakilamaz": "Ürün ismi boş bırakılamaz."
 };
 static const Map<String, Map<String,dynamic>> mapLocales = {"en": en, "tr": tr};
 }

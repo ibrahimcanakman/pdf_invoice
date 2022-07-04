@@ -1,12 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf_invoice/page/anasayfa.dart';
 import 'package:pdf_invoice/translations/locale_keys.g.dart';
-import 'package:pdf_invoice/utils/database_helper.dart';
 import 'package:syncfusion_flutter_signaturepad/signaturepad.dart';
 import 'dart:ui' as ui;
 
@@ -23,17 +23,18 @@ class AciklamaEkle extends ConsumerStatefulWidget {
 
 class _AciklamaEkleState extends ConsumerState<AciklamaEkle> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   int _selectedFruit = 0;
 
-  DatabaseHelper _databaseHelper = DatabaseHelper();
+  
   TextEditingController _yeniAciklamaController = TextEditingController();
-  TextEditingController _aciklamaController = TextEditingController();
+  //TextEditingController _aciklamaController = TextEditingController();
   final GlobalKey<SfSignaturePadState> signatureGlobalKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    aciklamalariGetir();
+    //aciklamalariGetir();
   }
 
   @override
@@ -44,14 +45,15 @@ class _AciklamaEkleState extends ConsumerState<AciklamaEkle> {
           appBar: AppBar(
             title: Text(LocaleKeys.aciklama_ve_imza_ekle.tr()),
           ),
-          body: ref.watch(aciklamalarProvider).isEmpty
+          body: /* ref.watch(aciklamalarProvider).isEmpty
               ? Center(
                   child: Text(LocaleKeys.aciklamalar_getiriliyor.tr()),
                 )
-              : Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Column(children: [
-                    Expanded(
+              :  */
+              Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Column(children: [
+              /* Expanded(
                       flex: 3,
                       child: Column(
                         //mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -65,7 +67,6 @@ class _AciklamaEkleState extends ConsumerState<AciklamaEkle> {
                                       squeeze: 1.2,
                                       useMagnifier: true,
                                       itemExtent: _kItemExtent,
-                                      // This is called when selected item is changed.
                                       onSelectedItemChanged:
                                           (int selectedItem) {
                                         setState(() {
@@ -126,7 +127,7 @@ class _AciklamaEkleState extends ConsumerState<AciklamaEkle> {
                                                             index]['aciklama'],
                                                         textAlign:
                                                             TextAlign.center,
-                                                        style: TextStyle(
+                                                        style: const TextStyle(
                                                             fontSize: 15),
                                                       ),
                                                     ),
@@ -136,7 +137,7 @@ class _AciklamaEkleState extends ConsumerState<AciklamaEkle> {
                                       }),
                                     ),
                                   );
-                                  // This displays the selected fruit name.
+                                  
                                 },
                                 child: Text(LocaleKeys.aciklama_sec.tr())),
                           ),
@@ -265,62 +266,93 @@ class _AciklamaEkleState extends ConsumerState<AciklamaEkle> {
                         ],
                       ),
                     ),
-                    Expanded(
-                      flex: 5,
-                      child: Column(
-                        children: [
-                          Container(
-                              child: SfSignaturePad(
-                                  key: signatureGlobalKey,
-                                  backgroundColor: Colors.white,
-                                  strokeColor: Colors.black,
-                                  minimumStrokeWidth: 1.0,
-                                  maximumStrokeWidth: 4.0),
-                              decoration: BoxDecoration(
-                                  border: Border.all(
-                                color: Colors.grey,
-                              ))),
-                          SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton(
-                                child: Text(LocaleKeys.temizle.tr()),
-                                onPressed: _handleClearButtonPressed,
-                              )
-                            ],
-                          ),
-                        ],
+                     */
+              Expanded(
+                flex: 3,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        LocaleKeys.fatura_aciklamasi.tr(),
+                        style: TextStyle(
+                            fontSize:
+                                Theme.of(context).textTheme.headline5!.fontSize,
+                            color: Colors.deepOrange),
                       ),
+                      TextFormField(
+                        controller: _yeniAciklamaController,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                            label: Text(LocaleKeys.yeni_aciklama.tr()),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15))),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 5,
+                child: Column(
+                  children: [
+                    Text(LocaleKeys.musteri_imzasi.tr(),
+                        style: TextStyle(
+                            fontSize:
+                                Theme.of(context).textTheme.headline5!.fontSize,
+                            color: Colors.deepOrange)),
+                    Container(
+                        child: SfSignaturePad(
+                            key: signatureGlobalKey,
+                            backgroundColor: Colors.white,
+                            strokeColor: Colors.black,
+                            minimumStrokeWidth: 1.0,
+                            maximumStrokeWidth: 4.0),
+                        decoration: BoxDecoration(
+                            border: Border.all(
+                          color: Colors.grey,
+                        ))),
+                    SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          child: Text(LocaleKeys.temizle.tr()),
+                          onPressed: _handleClearButtonPressed,
+                        )
+                      ],
                     ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            height: MediaQuery.of(context).size.height / 20,
-                            child: ElevatedButton(
-                                onPressed: () {
-                                  _imzayiKaydet().then((value) {
-                                    firebasefaturayiYaz().then((value) {
-                                      Navigator.pushAndRemoveUntil(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => AnaSayfa(),
-                                          ),
-                                          (route) => false);
-                                      ref
-                                          .read(seciliAciklamaProvider.notifier)
-                                          .update(
-                                              (state) => LocaleKeys.bir_aciklama_secin.tr());
-                                    });
-                                  });
-                                },
-                                child: Text(LocaleKeys.faturayi_kaydet.tr()))),
-                      ),
-                    )
-                  ]),
-                )),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height / 20,
+                      child: ElevatedButton(
+                          onPressed: () {
+                            _imzayiKaydet().then((value) {
+                              firebasefaturayiYaz().then((value) {
+                                Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AnaSayfa(),
+                                    ),
+                                    (route) => false);
+                                ref
+                                    .read(seciliAciklamaProvider.notifier)
+                                    .update((state) =>
+                                        LocaleKeys.bir_aciklama_secin.tr());
+                              });
+                            });
+                          },
+                          child: Text(LocaleKeys.faturayi_kaydet.tr()))),
+                ),
+              )
+            ]),
+          )),
     );
   }
 
@@ -340,7 +372,7 @@ class _AciklamaEkleState extends ConsumerState<AciklamaEkle> {
     ref.read(imzaProvider.notifier).update((state) => imza);
   }
 
-  void _showDialog(Widget child) {
+  /* void _showDialog(Widget child) {
     showCupertinoModalPopup<void>(
         context: context,
         builder: (BuildContext context) => Container(
@@ -359,24 +391,26 @@ class _AciklamaEkleState extends ConsumerState<AciklamaEkle> {
               ),
             ));
   }
-
-  Future<void> aciklamalariGetir() async {
+ */
+  /* Future<void> aciklamalariGetir() async {
     var aciklamalar = await _databaseHelper.aciklamalarigetir();
     ref.read(aciklamalarProvider.notifier).update((state) => [
           ...aciklamalar,
           {'aciklama': LocaleKeys.yeni_aciklama_ekle.tr()}
         ]);
-  }
+  } */
 
-  Future<void> aciklamaEkle() async {
+  /* Future<void> aciklamaEkle() async {
     await _databaseHelper.aciklamaekle(_yeniAciklamaController.text.trim());
-  }
+  } */
 
   Future<void> firebasefaturayiYaz() async {
     Map<String, dynamic> aciklama = {
-      'aciklama': ref.watch(seciliAciklamaProvider) == LocaleKeys.bir_aciklama_secin.tr()
+      /* 'aciklama': ref.watch(seciliAciklamaProvider) ==
+              LocaleKeys.bir_aciklama_secin.tr()
           ? ''
-          : ref.watch(seciliAciklamaProvider),
+          : ref.watch(seciliAciklamaProvider), */
+      'aciklama': _yeniAciklamaController.text.trim(),
       'imza': ref.watch(imzaProvider)
       //'faturaDocID': ref.watch(faturaDocAdiProvider)
     };

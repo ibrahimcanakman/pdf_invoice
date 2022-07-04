@@ -92,6 +92,12 @@ final aciklamalarProvider = StateProvider<List<Map<String, dynamic>>>((ref) => [
 //o an geçerli olan açıklamayı tutan provider
 final seciliAciklamaProvider = StateProvider<String?>((ref) => null,);
 
+//db den gelen ürün isimlerini tutan provider
+final urunlerProvider = StateProvider<List<String>>((ref) => [],);
+
+//o an geçerli olan ürünü tutan provider
+final seciliUrunProvider = StateProvider<String?>((ref) => null,);
+
 //firebaseden gelen faturanolar mapini tutan provider
 final faturaNolarProvider = StateProvider<Map<String, dynamic>?>((ref) => null,);
 

@@ -11,7 +11,6 @@ import 'package:pdf_invoice/page/aciklama_ekle.dart';
 import 'package:pdf_invoice/page/alici_sec.dart';
 import 'package:pdf_invoice/page/faturalarim.dart';
 import 'package:pdf_invoice/page/login_page.dart';
-import 'package:pdf_invoice/utils/database_helper.dart';
 
 import '../provider/all_providers.dart';
 import '../translations/locale_keys.g.dart';
@@ -38,7 +37,6 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
   TextEditingController _bankaSortCodeController = TextEditingController();
   TextEditingController _bankaAccountNumberController = TextEditingController(); */
 
-  //DatabaseHelper _databaseHelper = DatabaseHelper();
   //late List<Map<String, dynamic>> saticiFirma;
   late FirebaseAuth _auth;
   late FirebaseFirestore _firestore;

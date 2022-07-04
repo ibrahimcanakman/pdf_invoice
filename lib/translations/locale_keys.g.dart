@@ -106,5 +106,10 @@ abstract class  LocaleKeys {
   static const aciklamayi_ekle = 'aciklamayi_ekle';
   static const temizle = 'temizle';
   static const faturayi_kaydet = 'faturayi_kaydet';
+  static const fatura_aciklamasi = 'fatura_aciklamasi';
+  static const musteri_imzasi = 'musteri_imzasi';
+  static const yeni_urun_ekle = 'yeni_urun_ekle';
+  static const yeni_urun_adi = 'yeni_urun_adi';
+  static const urun_ismi_bos_birakilamaz = 'urun_ismi_bos_birakilamaz';
 
 }
