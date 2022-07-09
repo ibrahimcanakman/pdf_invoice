@@ -439,7 +439,7 @@ class PdfFatura1 {
           Offset(page.size.width, result.bounds.bottom + 77));
     }
 
-    List<int> bytes = document.save();
+    List<int> bytes = await document.save();
     document.dispose();
 
     return bytes;
