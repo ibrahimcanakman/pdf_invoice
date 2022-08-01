@@ -22,6 +22,7 @@ import '../model/supplier.dart';
 import '../provider/all_providers.dart';
 import '../translations/locale_keys.g.dart';
 import 'alici_sec.dart';
+import 'coklu_fatura_gonder.dart';
 
 class Faturalarim extends ConsumerStatefulWidget {
   const Faturalarim({Key? key}) : super(key: key);
@@ -41,13 +42,14 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
   final TextEditingController _bankaAccountNumberController = TextEditingController(); */
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   //DatabaseHelper _databaseHelper = DatabaseHelper();
+  List<QueryDocumentSnapshot<Map<String, dynamic>>>? faturalar;
 
   //String saticiFirmaAdi = '';
 
   @override
   void initState() {
     //faturalariGetir();
-    mailBilgisiGetir();
+    //mailBilgisiGetir();
     super.initState();
   }
   /* saticiFirmaGetir() async {
@@ -75,7 +77,7 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
 
         //bottom nav bar
         bottomNavigationBar: Visibility(
-          visible: ref.watch(radioFaturaProvider) != null,
+          visible: true, //ref.watch(radioFaturaProvider) != null,
           child: BottomNavigationBar(
               showUnselectedLabels: true,
               selectedItemColor: Colors.deepOrange,
@@ -84,31 +86,68 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
               unselectedFontSize: 12,
               currentIndex: 0,
               onTap: (index) {
-                if (ref.watch(radioFaturaProvider) != null) {
-                  switch (index) {
-                    case 0:
+                switch (index) {
+                  case 0:
+                    if (ref.watch(radioFaturaProvider) != null) {
                       pdfGoruntule();
-                      debugPrint('0 tıklandı');
-                      break;
-                    case 1:
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(LocaleKeys.fatura_secimi_yapin.tr())));
+                    }
+
+                    break;
+                  case 1:
+                    if (ref.watch(radioFaturaProvider) != null) {
                       faturaDuzenle();
-                      debugPrint('1 tıklandı');
-                      break;
-                    case 2:
-                      emailGonder();
-                      //faturaGonder();
-                      debugPrint('2 tıklandı');
-                      break;
-                    case 3:
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(LocaleKeys.fatura_secimi_yapin.tr())));
+                    }
+
+                    break;
+                  case 2:
+                    ref
+                        .read(faturalarProvider.notifier)
+                        .update((state) => faturalar!);
+                    ref
+                        .read(seciliTarihAraligindakiFaturalar.notifier)
+                        .update((state) => ref.read(faturalarProvider));
+                    List<bool> checkboxList = [
+                      for (var i = 0;
+                          i <= ref.read(faturalarProvider).length;
+                          i++)
+                        false
+                    ];
+
+                    ref
+                        .read(faturaCheckboxProvider.notifier)
+                        .update((state) => checkboxList);
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CokluFaturaGonder(),
+                        ));
+                    // emailGonder fonksiyonu tekli fatura göndermek için çalışan fonksiyon
+                    //emailGonder();
+                    //faturaGonder();
+                    break;
+                  case 3:
+                    if (ref.watch(radioFaturaProvider) != null) {
                       faturaSil();
-                      debugPrint('3 tıklandı');
-                      break;
-                    default:
-                  }
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(LocaleKeys.fatura_secimi_yapin.tr())));
+                    }
+
+                    break;
+                  default:
+                }
+                /* if (ref.watch(radioFaturaProvider) != null) {
+                  
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       content: Text(LocaleKeys.fatura_secimi_yapin.tr())));
-                }
+                } */
                 ref.read(radioFaturaProvider.notifier).update((state) => null);
               },
               items: [
@@ -343,11 +382,12 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
                   );
                 }  */
                 //else {
-                ref
+                /* ref
                     .read(saticiAdi.notifier)
-                    .update((state) => auth.currentUser!.email!);
-                var gelenBilgi =
-                    await _firestore.collection(auth.currentUser!.email!).get();
+                    .update((state) => auth.currentUser!.email!); */
+                var gelenBilgi = await _firestore
+                    .collection(auth.currentUser!.displayName!)
+                    .get();
 
                 ref.read(provider.notifier).update((state) => gelenBilgi.docs);
                 var liste = ref.watch(provider);
@@ -392,7 +432,83 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
 
             //faturaların olduğu liste
             Expanded(
-              child: ListView.builder(
+                child: StreamBuilder(
+              stream: _firestore
+                  .collection(auth.currentUser!.displayName!)
+                  .doc('saticiFirma')
+                  .collection('faturalar')
+                  .snapshots(),
+              builder: (BuildContext context,
+                  AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
+                if (snapshot.hasData) {
+                  final List<QueryDocumentSnapshot<Map<String, dynamic>>>
+                      _faturalar = snapshot.data!.docs;
+                  List<Map<String, dynamic>> faturaListesi = [];
+                  _faturalar.sort((a, b) =>
+                      b.data()['createdAt'].compareTo(a.data()['createdAt']));
+                  /* ref
+                      .read(faturalarProvider.notifier)
+                      .update((state) => _faturalar); */
+
+                  faturalar = [];
+                  faturalar!.addAll(_faturalar);
+
+                  for (var item in _faturalar) {
+                    faturaListesi.add(item.data());
+                  }
+                  return ListView.builder(
+                    itemCount: faturaListesi.length,
+                    itemBuilder: (context, index) {
+                      return Column(
+                        children: [
+                          ListTile(
+                            onTap: () {
+                              ref
+                                  .read(radioFaturaProvider.notifier)
+                                  .update((state) => index);
+                              ref
+                                  .read(seciliFaturaProvider.notifier)
+                                  .update((state) => faturaListesi[index]);
+                            },
+                            leading: Radio(
+                              value: index,
+                              groupValue: ref.watch(radioFaturaProvider),
+                              onChanged: (int? yeniDeger) {
+                                ref
+                                    .read(radioFaturaProvider.notifier)
+                                    .update((state) => index);
+                                ref
+                                    .read(seciliFaturaProvider.notifier)
+                                    .update((state) => faturaListesi[index]);
+                              },
+                            ),
+                            title: Text(faturaListesi[index]['aliciAdi']),
+                            subtitle:
+                                Text(faturaListesi[index]['faturaTarihi']),
+                            trailing: Text(
+                                '£ ${faturaListesi[index]['faturaToplami']}'),
+                          ),
+                          const Divider(
+                            height: 0,
+                            thickness: 1,
+                          )
+                        ],
+                      );
+                    },
+                  );
+                } else {
+                  return const Center(
+                    child: SizedBox(
+                      height: 40,
+                      width: 40,
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+              },
+            )
+
+                /* ListView.builder(
                 itemCount: ref.watch(faturalarProvider).length,
                 itemBuilder: (context, index) {
                   return Column(
@@ -434,15 +550,15 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
                     ],
                   );
                 },
-              ),
-            ),
+              ), */
+                ),
           ],
         ),
       ),
     );
   }
 
-  faturalariGetir() async {
+  /* faturalariGetir() async {
     //var value = await _databaseHelper.getir();
     ref.read(saticiAdi.notifier).update((state) => auth.currentUser!.email!);
     var gelenFaturalarSS = await _firestore
@@ -457,11 +573,11 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
     ref
         .read(faturalarProvider.notifier)
         .update((state) => gelenFaturalarListesi);
-  }
+  } */
 
   void pdfGoruntule() async {
     var saticiBilgileriSS = await _firestore
-        .collection(ref.watch(saticiAdi).toString())
+        .collection(auth.currentUser!.displayName!)
         .doc('saticiFirma')
         .get();
     var saticiBilgileriMap = saticiBilgileriSS.data();
@@ -485,11 +601,11 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
           address: ref.watch(seciliFaturaProvider)['aliciAdresi'],
           email: ref.watch(seciliFaturaProvider)['aliciEmail'],
           phone: ref.watch(seciliFaturaProvider)['aliciTelefon'],
-          imza: ref.watch(seciliFaturaProvider)['imza']),
+          imza: saticiBilgileriMap['imza']),
       info: InvoiceInfo(
-        date: ref.watch(seciliFaturaProvider)['faturaTarihi'],
-        description: ref.watch(seciliFaturaProvider)['aciklama'],
-      ),
+          date: ref.watch(seciliFaturaProvider)['faturaTarihi'],
+          description: '' //ref.watch(seciliFaturaProvider)['aciklama'],
+          ),
       items: [
         for (var item in ref.watch(seciliFaturaProvider)['urunler'])
           InvoiceItem(
@@ -699,13 +815,18 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
                     child: Text(LocaleKeys.vazgec.tr())),
                 ElevatedButton(
                     onPressed: () async {
+                      Timestamp tarih =
+                          ref.read(seciliFaturaProvider)['createdAt'];
+
+                      faturaNoSil(ref.read(seciliFaturaProvider)['faturaNo'],
+                          tarih.toDate());
                       await _firestore
-                          .collection(ref.watch(saticiAdi))
+                          .collection(auth.currentUser!.displayName!)
                           .doc('saticiFirma')
                           .collection('faturalar')
-                          .doc(ref.watch(seciliFaturaProvider)['faturaDocID'])
+                          .doc(ref.watch(seciliFaturaProvider)['faturaNo'])
                           .delete();
-                      faturalariGetir();
+                      //faturalariGetir();
                       Navigator.pop(context);
                       ref
                           .read(radioFaturaProvider.notifier)
@@ -716,7 +837,64 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
             ));
   }
 
-  void emailGonder() async {
+  Future<void> faturaNoSil(String faturaNo, DateTime faturaTarihi) async {
+    if ((faturaNo.length > 9 &&
+        faturaNo.substring(0, 9) ==
+            DateFormat('yyyyMMdd').format(faturaTarihi) + '-')) {
+      debugPrint('fatura tarihi içeriyor' +
+          DateFormat('yyyyMMdd').format(faturaTarihi) +
+          '-');
+      String sira = faturaNo.substring(9);
+      if (int.tryParse(sira.trim()) != null) {
+        await _firestore
+            .collection(auth.currentUser!.displayName!)
+            .doc('saticiFirma')
+            .collection('faturaNumaralari')
+            .doc('tarihSayi')
+            .collection(DateFormat('yyyyMMdd').format(faturaTarihi))
+            .doc('tarihSayi')
+            .get()
+            .then((value) async {
+          if (value.data() != null) {
+            List<dynamic> liste = value.data()!['tarihSayi'];
+            liste.remove(int.parse(sira.trim()));
+            await _firestore
+                .collection(auth.currentUser!.displayName!)
+                .doc('saticiFirma')
+                .collection('faturaNumaralari')
+                .doc('tarihSayi')
+                .collection(DateFormat('yyyyMMdd').format(faturaTarihi))
+                .doc('tarihSayi')
+                .update({'tarihSayi': liste});
+          }
+        });
+      }
+    } else {
+      debugPrint('fatura Tarihi içermiyor');
+      if (int.tryParse(faturaNo) != null) {
+        await _firestore
+            .collection(auth.currentUser!.displayName!)
+            .doc('saticiFirma')
+            .collection('faturaNumaralari')
+            .doc('artanSayi')
+            .get()
+            .then((value) async {
+          if (value.data() != null) {
+            List<dynamic> liste = value.data()!['asrtanSayi'];
+            liste.remove(int.parse(faturaNo));
+            await _firestore
+                .collection(auth.currentUser!.displayName!)
+                .doc('saticiFirma')
+                .collection('faturaNumaralari')
+                .doc('artanSayi')
+                .update({'artanSayi': liste});
+          }
+        });
+      }
+    }
+  }
+
+  /* void emailGonder() async {
     var aliciBilgileri = await _firestore
         .collection(ref.watch(saticiAdi).toString())
         .doc(ref.watch(seciliFaturaProvider)['aliciAdi'])
@@ -940,11 +1118,12 @@ class _FaturalarimState extends ConsumerState<Faturalarim> {
       );
     }
   }
+ */
 
-  void mailBilgisiGetir() async {
+  /* void mailBilgisiGetir() async {
     var mailBilgisiData =
         await _firestore.collection('uygulama_mail').doc('mail').get();
     var mailIcerik = mailBilgisiData.data();
     ref.read(mailBilgisiProvider.notifier).update((state) => mailIcerik!);
-  }
+  } */
 }

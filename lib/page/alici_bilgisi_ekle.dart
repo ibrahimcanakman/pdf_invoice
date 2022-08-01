@@ -4,6 +4,7 @@ import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../constants/constant.dart';
 import '../provider/all_providers.dart';
 import '../translations/locale_keys.g.dart';
 
@@ -50,11 +51,13 @@ class AliciBilgisiEkle extends ConsumerWidget {
                     return LocaleKeys.bos_birakilamaz.tr();
                   } else if (kayitliMusteriAdlari
                       .contains(value.toLowerCase())) {
-                    return LocaleKeys.bu_isimle_kayitli_bir_musteri_bulunmakta.tr();
+                    return LocaleKeys.bu_isimle_kayitli_bir_musteri_bulunmakta
+                        .tr();
                   } else {
                     return null;
                   }
                 },
+                textCapitalization: TextCapitalization.words,
                 controller: adiController,
                 decoration: InputDecoration(
                     label: Text(LocaleKeys.musteri_adi.tr()),
@@ -75,6 +78,7 @@ class AliciBilgisiEkle extends ConsumerWidget {
                 },
                 controller: adresiController,
                 maxLines: 5,
+                textCapitalization: TextCapitalization.words,
                 decoration: InputDecoration(
                     label: Text(LocaleKeys.adresi.tr()),
                     border: OutlineInputBorder(
@@ -86,6 +90,7 @@ class AliciBilgisiEkle extends ConsumerWidget {
               TextFormField(
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 keyboardType: TextInputType.phone,
+                
                 validator: (value) {
                   if (value!.isEmpty) {
                     return LocaleKeys.bos_birakilamaz.tr();
@@ -137,11 +142,11 @@ class AliciBilgisiEkle extends ConsumerWidget {
                           };
                           try {
                             await _firestore
-                                .collection(ref.watch(saticiAdi))
+                                .collection(auth.currentUser!.displayName!)
                                 .doc(adiController.text.trim())
                                 .set(eklenecakMap);
                             var gelenBilgi = await _firestore
-                                .collection(ref.watch(saticiAdi))
+                                .collection(auth.currentUser!.displayName!)
                                 .get();
 
                             ref
@@ -170,7 +175,9 @@ class AliciBilgisiEkle extends ConsumerWidget {
                               builder: (BuildContext context) {
                                 return AlertDialog(
                                   title: Text(LocaleKeys.hata_olustu.tr()),
-                                  content: Text(LocaleKeys.musteri_kaydi_yapilirken_hata_olustu_tekrar_deneyin.tr()),
+                                  content: Text(LocaleKeys
+                                      .musteri_kaydi_yapilirken_hata_olustu_tekrar_deneyin
+                                      .tr()),
                                   actions: <Widget>[
                                     TextButton(
                                       child: Text(LocaleKeys.tamam.tr()),
@@ -189,7 +196,9 @@ class AliciBilgisiEkle extends ConsumerWidget {
                             padding: EdgeInsets.only(
                                 bottom:
                                     MediaQuery.of(context).viewInsets.bottom),
-                            child: Text(LocaleKeys.alanlari_dogru_doldurdugunuzdan_emin_olun.tr()),
+                            child: Text(LocaleKeys
+                                .alanlari_dogru_doldurdugunuzdan_emin_olun
+                                .tr()),
                           )));
                         }
                       },

@@ -124,7 +124,22 @@ class CodegenLoader extends AssetLoader{
   "musteri_imzasi": "Customer Signature",
   "yeni_urun_ekle": "Add New Product",
   "yeni_urun_adi": "New Product Name",
-  "urun_ismi_bos_birakilamaz": "The product name cannot be left blank."
+  "urun_ismi_bos_birakilamaz": "The product name cannot be left blank.",
+  "fatura_kaydediliyor": "Saving Invoice...",
+  "fatura_kaydi_basarili": "Invoice Registration Successful...",
+  "fatura_kaydi_basarisiz": "Invoice Registration Failed...",
+  "baslangic_ve_bitis_tarihi_secin": "Select Start and End Date",
+  "coklu_fatura_gonder": "Send Multiple Invoices",
+  "hepsini_sec": "Select All",
+  "fatura_sahibi": "Invoice Holder",
+  "gonderilecek_email_girin": "Enter Email to Send...",
+  "faturalari_gonder": "Send Invoices",
+  "artan_sayi_5er": "Increasing Number by 5",
+  "artan_sayi_3er": "Increasing Number by 3",
+  "imza": "Signature",
+  "bilgilerimi_guncelle": "Update My Information",
+  "email_guncelleme_mesaji": "Verification is required before your information can be updated. Please enter your password. In order to log in to the application after the e-mail change, the account must be verified via the new e-mail. Therefore, after this update, you will see an e-mail verification message on the first login to the application. You must use the link in the e-mail sent for verification. Otherwise, you may not be able to login to the application.",
+  "onayla": "Approve"
 };
 static const Map<String,dynamic> tr = {
   "giris_ekrani": "Giriş Ekranı",
@@ -236,7 +251,22 @@ static const Map<String,dynamic> tr = {
   "musteri_imzasi": "Müşteri İmzası",
   "yeni_urun_ekle": "Yeni Ürün Ekle",
   "yeni_urun_adi": "Yeni Ürün Adı",
-  "urun_ismi_bos_birakilamaz": "Ürün ismi boş bırakılamaz."
+  "urun_ismi_bos_birakilamaz": "Ürün ismi boş bırakılamaz.",
+  "fatura_kaydediliyor": "Fatura Kaydediliyor...",
+  "fatura_kaydi_basarili": "Fatura Kaydı Başarılı...",
+  "fatura_kaydi_basarisiz": "Fatura Kaydı Başarısız...",
+  "baslangic_ve_bitis_tarihi_secin": "Başlangıç ve Bitiş Tarihi Seçin",
+  "coklu_fatura_gonder": "Çoklu Fatura Gönder",
+  "hepsini_sec": "Hepsini Seç",
+  "fatura_sahibi": "Fatura Sahibi",
+  "gonderilecek_email_girin": "Gönderilecek E-Mail Girin...",
+  "faturalari_gonder": "Faturaları Gönder",
+  "artan_sayi_5er": "Artan Sayı 5'er",
+  "artan_sayi_3er": "Artan Sayı 3'er",
+  "imza": "İmza",
+  "bilgilerimi_guncelle": "Bilgilerimi Güncelle",
+  "email_guncelleme_mesaji": "Bilgilerinizin güncellenebilmesi için doğrulama gerekli. Lütfen şifrenizi girin. E-mail değişiminden sonra uygulamaya giriş yapabilmek için hesabın yeni e-mail üzerinden doğrulanması gerekli. Bu yüzden, bu güncellemeden sonra uygulamaya ilk girişte e-mail doğrulama mesajı göreceksiniz. Doğrulama için gönderilen e-mail içindeki linki kullanmalısınız. Aksi taktirde uygulamaya giriş yapamayabilirsiniz.",
+  "onayla": "Onayla"
 };
 static const Map<String, Map<String,dynamic>> mapLocales = {"en": en, "tr": tr};
 }

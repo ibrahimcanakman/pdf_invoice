@@ -7,8 +7,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdf_invoice/constants/constant.dart';
 import 'package:pdf_invoice/page/aciklama_ekle.dart';
 import 'package:pdf_invoice/page/alici_sec.dart';
+import 'package:pdf_invoice/page/coklu_fatura_gonder.dart';
+import 'package:pdf_invoice/page/fatura_olusturuldu_onay_page.dart';
 import 'package:pdf_invoice/page/faturalarim.dart';
 import 'package:pdf_invoice/page/login_page.dart';
 
@@ -318,9 +321,9 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
                           ref.watch(yetkiSeviyesiProvider)! < 2) {
                         await dogrulamaPenceresi(context);
                       } else {
-                        ref
+                        /* ref
                             .read(saticiAdi.notifier)
-                            .update((state) => _auth.currentUser!.email!);
+                            .update((state) => _auth.currentUser!.email!); */
                         //BURADAN KESTİM
                         Navigator.push(
                             context,
@@ -350,13 +353,12 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
                       await dogrulamaPenceresi(context);
                     } else {
                       saticiBilgileriniGetir().then((value) {
-                        faturalariGetir().then((value) {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const Faturalarim(),
-                              ));
-                        });
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const Faturalarim(),
+                            ));
+                        //faturalariGetir().then((value) {});
                       });
                     }
                   },
@@ -365,6 +367,40 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
                     style: const TextStyle(fontSize: 24),
                   )),
             ),
+
+            /* SizedBox(
+              height: MediaQuery.of(context).size.height / 30,
+            ),
+
+            // Çoklu Fatura Gönder Butonu
+            SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height / 10,
+              child: ElevatedButton(
+                  onPressed: () async {
+                    if (ref.watch(yetkiSeviyesiProvider) != null &&
+                        ref.watch(yetkiSeviyesiProvider)! < 2) {
+                      await dogrulamaPenceresi(context);
+                    } else {
+                      saticiBilgileriniGetir().then((value) {
+                        faturalariGetir().then((value) {
+                          ref
+                              .read(seciliTarihAraligindakiFaturalar.notifier)
+                              .update((state) => ref.read(faturalarProvider));
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const CokluFaturaGonder(),
+                              ));
+                        });
+                      });
+                    }
+                  },
+                  child: Text(
+                    'Çoklu Fatura Gönder',
+                    style: const TextStyle(fontSize: 24),
+                  )),
+            ), */
             const Spacer(),
             SizedBox(
                 width: MediaQuery.of(context).size.width,
@@ -412,6 +448,18 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
                           builder: (context) => const LoginPage(),
                         ),
                         (route) => false);
+                    /* AuthCredential credential = EmailAuthProvider.credential(
+                        email: 'ibrahimcanakman@outlook.com',
+                        password: '123456');
+                    await _auth.currentUser!
+                        .reauthenticateWithCredential(credential);
+                    await auth.currentUser!
+                        .updateEmail('ibrahimcanakman@hotmail.com')
+                        .then((value) => debugPrint('değişti'))
+                        .catchError(
+                            (e) => debugPrint('hata oldu ${e.toString()}'));
+                    debugPrint(_auth.currentUser!.displayName);
+                    debugPrint(_auth.currentUser!.email); */
                   },
                   child: Text(
                     LocaleKeys.cikis_yap.tr(),
@@ -516,13 +564,14 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
     }
     await _firestore.doc('kodlar/kodlar').update({'kodlar': guncelListe});
     await _firestore
-        .doc('${_auth.currentUser!.email}/saticiFirma')
+        .doc('${_auth.currentUser!.displayName!}/saticiFirma')
         .update({'yetkiSeviyesi': 2});
   }
 
   Future<void> yetkiSeviyesiGetir() async {
-    var gelenBilgi =
-        await _firestore.doc('${_auth.currentUser!.email}/saticiFirma').get();
+    var gelenBilgi = await _firestore
+        .doc('${_auth.currentUser!.displayName!}/saticiFirma')
+        .get();
     int yetkiSeviyesi = gelenBilgi.data()!['yetkiSeviyesi'];
     ref.read(yetkiSeviyesiProvider.notifier).update((state) => yetkiSeviyesi);
     //firebaseden logo Stringi okunum providera atma
@@ -538,11 +587,26 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
 
   Future<void> saticiBilgileriniGetir() async {
     await _firestore
-        .doc('${_auth.currentUser!.email}/saticiFirma')
+        .doc('${_auth.currentUser!.displayName!}/saticiFirma')
         .get()
         .then((value) async {
       var bilgiler = value.data();
-      if (bilgiler!['firmaLogo'].isEmpty) {
+      ref.read(saticiBilgileriProvider.notifier).update((state) => bilgiler);
+      if (bilgiler!.keys.contains('imza')) {
+        if (bilgiler['imza'] != null) {
+          ref.read(imzaProvider.notifier).update((state) => bilgiler['imza']);
+          var dataa = bilgiler['imza'].codeUnits;
+          final data = Uint8List.fromList(dataa);
+          var imza =
+              data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+          ref.read(imzapngProvider.notifier).update((state) => imza);
+        } else {
+          ref.read(imzapngProvider.notifier).update((state) => null);
+          //ref.read(imzaProvider.notifier).update((state) => null);
+        }
+      }
+
+      if (bilgiler['firmaLogo'].isEmpty) {
         ref.read(logoProvider.notifier).update((state) => null);
       } else {
         var dataa = bilgiler['firmaLogo'].codeUnits;
@@ -560,7 +624,7 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
           .update((state) => bilgiler['faturaFormati'] == 'Format1' ? 0 : 1);
       await _firestore
           .doc(
-              '${_auth.currentUser!.email}/saticiFirma/faturaNoBicim/faturaNoBicim')
+              '${_auth.currentUser!.displayName!}/saticiFirma/faturaNoBicim/faturaNoBicim')
           .get()
           .then((value) {
         ref
@@ -570,7 +634,7 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
     });
   }
 
-  Future<void> faturalariGetir() async {
+  /* Future<void> faturalariGetir() async {
     //var value = await _databaseHelper.getir();
     ref.read(saticiAdi.notifier).update((state) => _auth.currentUser!.email!);
     var gelenFaturalarSS = await _firestore
@@ -581,9 +645,13 @@ class _AnaSayfaState extends ConsumerState<AnaSayfa> {
     var gelenFaturalarListesi = gelenFaturalarSS.docs;
     gelenFaturalarListesi
         .sort((a, b) => b.data()['createdAt'].compareTo(a.data()['createdAt']));
-
+    List<bool> checkboxList = [
+      for (var i = 0; i <= gelenFaturalarListesi.length; i++) false
+    ];
+    debugPrint('gelen liste uzunluğu ${checkboxList.length}');
+    ref.read(faturaCheckboxProvider.notifier).update((state) => checkboxList);
     ref
         .read(faturalarProvider.notifier)
         .update((state) => gelenFaturalarListesi);
-  }
+  } */
 }

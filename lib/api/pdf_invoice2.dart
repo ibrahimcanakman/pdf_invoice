@@ -176,13 +176,22 @@ class PdfFatura2 {
         bounds: Rect.fromLTWH(10, 10, 180, 70),
         pen: PdfPen(PdfColor(142, 170, 219)));
 
-    footer.graphics.drawImage(PdfBitmap(await _resim(invoice.customer.imza)),
-        Rect.fromLTWH(15, 15, page.getClientSize().width / 3, 60));
-
+    invoice.customer.imza != null
+        ? footer.graphics.drawImage(
+            PdfBitmap(await _resim(invoice.customer.imza!)),
+            Rect.fromLTWH(15, 15, page.getClientSize().width / 3, 60))
+        : null;
+    String bankaBilgisi =
+        '\nAccount Name__: ${bankaBilgileri['accountName']}\nSort Code_______: ${bankaBilgileri['sortCode']}\nAccount Number: ${bankaBilgileri['accountNumber']}';
+    final Size textSize = contentFont.measureString(bankaBilgisi);
+    //page.size.width / 1.8
     footer.graphics.drawString(
         bounds: Rect.fromLTWH(
-            page.size.width / 1.8, 20, page.getClientSize().width, 80),
-        '\nAccount Name__: ${bankaBilgileri['accountName']}\nSort Code_______: ${bankaBilgileri['sortCode']}\nAccount Number: ${bankaBilgileri['accountNumber']}',
+            page.getClientSize().width - (15 + textSize.width),
+            20,
+            page.getClientSize().width,
+            80),
+        bankaBilgisi,
         font);
     document.template.bottom = footer;
 

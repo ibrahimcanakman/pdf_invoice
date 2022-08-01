@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdf_invoice/constants/description_controllers.dart';
 import 'package:pdf_invoice/page/aciklama_ekle.dart';
+import 'package:pdf_invoice/page/fatura_olusturuldu_onay_page.dart';
 import 'package:pdf_invoice/page/faturalarim.dart';
 import '../provider/all_providers.dart';
 import '../translations/locale_keys.g.dart';
@@ -58,418 +59,357 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
       },
     ); */
 
-    return Scaffold(
-        resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          title: Text(LocaleKeys.urun_ekle.tr()),
-        ),
-        body: Column(
-          children: [
-            /* SizedBox(
-              height: MediaQuery.of(context).size.height * 0.2,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  FloatingActionButton(
-                    onPressed: () {
-                      /* TextEditingController urunAdi1 = TextEditingController();
-                      TextEditingController urunMiktari1 =
-                          TextEditingController();
-                      TextEditingController urunBirim1 = TextEditingController();
-                      TextEditingController urunKDV1 = TextEditingController(); */
-                      if (urunAdi.text.trim().isNotEmpty &&
-                          urunMiktari.text.trim().isNotEmpty &&
-                          urunBirim.text.trim().isNotEmpty &&
-                          urunKDV.text.trim().isNotEmpty) {
-                        var eklenenUrun = {
-                          'urunAdi': urunAdi.text,
-                          'urunMiktari': urunMiktari.text,
-                          'urunBirim': urunBirim.text,
-                          'urunKDV': urunKDV.text
-                        };
+    return WillPopScope(
+      onWillPop: () {
+        ref.read(tarihDatetimeProvider.notifier).update((state) => null);
+        return Future.value(true);
+      },
+      child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          appBar: AppBar(
+            title: Text(LocaleKeys.urun_ekle.tr()),
+          ),
+          body: Column(
+            children: [
+              /* SizedBox(
+                height: MediaQuery.of(context).size.height * 0.2,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    FloatingActionButton(
+                      onPressed: () {
+                        /* TextEditingController urunAdi1 = TextEditingController();
+                        TextEditingController urunMiktari1 =
+                            TextEditingController();
+                        TextEditingController urunBirim1 = TextEditingController();
+                        TextEditingController urunKDV1 = TextEditingController(); */
+                        if (urunAdi.text.trim().isNotEmpty &&
+                            urunMiktari.text.trim().isNotEmpty &&
+                            urunBirim.text.trim().isNotEmpty &&
+                            urunKDV.text.trim().isNotEmpty) {
+                          var eklenenUrun = {
+                            'urunAdi': urunAdi.text,
+                            'urunMiktari': urunMiktari.text,
+                            'urunBirim': urunBirim.text,
+                            'urunKDV': urunKDV.text
+                          };
+    
+                          ref
+                              .read(urunListesiProvider.notifier)
+                              .update((state) => [...state, eklenenUrun]);
+                          urunAdi.text = '';
+                          urunMiktari.text = '';
+                          urunBirim.text = '';
+                          urunKDV.text = '';
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Padding(
+                            padding: EdgeInsets.only(
+                                bottom: MediaQuery.of(context).viewInsets.bottom),
+                            child: Text('Alanlar boş bırakılamaz...'),
+                          )));
+                        }
+                      },
+                      child: Icon(Icons.add),
+                    ),
+                  ],
+                ),
+              ), */
 
-                        ref
-                            .read(urunListesiProvider.notifier)
-                            .update((state) => [...state, eklenenUrun]);
-                        urunAdi.text = '';
-                        urunMiktari.text = '';
-                        urunBirim.text = '';
-                        urunKDV.text = '';
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Padding(
-                          padding: EdgeInsets.only(
-                              bottom: MediaQuery.of(context).viewInsets.bottom),
-                          child: Text('Alanlar boş bırakılamaz...'),
-                        )));
-                      }
-                    },
-                    child: Icon(Icons.add),
-                  ),
-                ],
+              SizedBox(
+                height: MediaQuery.of(context).size.height / 20,
               ),
-            ), */
-
-            SizedBox(
-              height: MediaQuery.of(context).size.height / 20,
-            ),
-            //GRİ bar başlık
-            Container(
-              height: MediaQuery.of(context).size.height / 30,
-              color: Colors.grey,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  const Expanded(
-                      flex: 1,
-                      //width: MediaQuery.of(context).size.width / 5,
-                      child: SizedBox()),
-                  Expanded(
-                      flex: 3,
-                      //width: MediaQuery.of(context).size.width / 5,
-                      child: Center(
-                        child: Text(
-                          LocaleKeys.urun_adi.tr(),
-                          textAlign: TextAlign.center,
-                        ),
-                      )),
-                  Expanded(
-                      flex: 3,
-                      //width: MediaQuery.of(context).size.width / 5,
-                      child: Center(
-                        child: Text(
-                          LocaleKeys.miktari.tr(),
-                          textAlign: TextAlign.center,
-                        ),
-                      )),
-                  Expanded(
-                      flex: 3,
-                      //width: MediaQuery.of(context).size.width / 5,
-                      child: Center(
-                        child: Text(
-                          LocaleKeys.birim_fiyati.tr(),
-                          textAlign: TextAlign.center,
-                        ),
-                      )),
-                  Expanded(
-                      flex: 3,
-                      //width: MediaQuery.of(context).size.width / 5,
-                      child: Center(
-                        child: Text(
-                          LocaleKeys.kdv.tr(),
-                          textAlign: TextAlign.center,
-                        ),
-                      )),
-                ],
+              //GRİ bar başlık
+              Container(
+                height: MediaQuery.of(context).size.height / 30,
+                color: Colors.grey,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    const Expanded(
+                        flex: 1,
+                        //width: MediaQuery.of(context).size.width / 5,
+                        child: SizedBox()),
+                    Expanded(
+                        flex: 3,
+                        //width: MediaQuery.of(context).size.width / 5,
+                        child: Center(
+                          child: Text(
+                            LocaleKeys.urun_adi.tr(),
+                            textAlign: TextAlign.center,
+                          ),
+                        )),
+                    Expanded(
+                        flex: 3,
+                        //width: MediaQuery.of(context).size.width / 5,
+                        child: Center(
+                          child: Text(
+                            LocaleKeys.miktari.tr(),
+                            textAlign: TextAlign.center,
+                          ),
+                        )),
+                    Expanded(
+                        flex: 3,
+                        //width: MediaQuery.of(context).size.width / 5,
+                        child: Center(
+                          child: Text(
+                            LocaleKeys.birim_fiyati.tr(),
+                            textAlign: TextAlign.center,
+                          ),
+                        )),
+                    Expanded(
+                        flex: 3,
+                        //width: MediaQuery.of(context).size.width / 5,
+                        child: Center(
+                          child: Text(
+                            LocaleKeys.kdv.tr(),
+                            textAlign: TextAlign.center,
+                          ),
+                        )),
+                  ],
+                ),
               ),
-            ),
 
-            //ürünlerin listview
-            Expanded(
-              child: ListView.builder(
-                itemCount: ref.watch(urunListesiProvider).length + 1,
-                itemBuilder: (context, index) {
-                  return index != ref.watch(urunListesiProvider).length
-                      ? Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Expanded(
-                                flex: 1,
-                                //width: MediaQuery.of(context).size.width / 5,
-                                child: Center(
-                                    child: GestureDetector(
-                                  onTap: () {
-                                    urunCikar(index);
-                                    /* setState(() {
-                                      
-                                    }); */
-                                  },
-                                  child: const CircleAvatar(
-                                    backgroundColor: Colors.deepOrange,
-                                    child: Icon(Icons.remove),
-                                  ),
-                                ))),
-                            Expanded(
-                                flex: 3,
-                                //width: MediaQuery.of(context).size.width / 4,
-                                child: Center(
-                                  child: SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
+              //ürünlerin listview
+              Expanded(
+                child: ListView.builder(
+                  itemCount: ref.watch(urunListesiProvider).length + 1,
+                  itemBuilder: (context, index) {
+                    return index != ref.watch(urunListesiProvider).length
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Expanded(
+                                  flex: 1,
+                                  //width: MediaQuery.of(context).size.width / 5,
+                                  child: Center(
+                                      child: GestureDetector(
+                                    onTap: () {
+                                      urunCikar(index);
+                                      /* setState(() {
+                                        
+                                      }); */
+                                    },
+                                    child: const CircleAvatar(
+                                      backgroundColor: Colors.deepOrange,
+                                      child: Icon(Icons.remove),
+                                    ),
+                                  ))),
+                              Expanded(
+                                  flex: 3,
+                                  //width: MediaQuery.of(context).size.width / 4,
+                                  child: Center(
+                                    child: SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Text(
+                                        ref.watch(urunListesiProvider)[index]
+                                            ['urunAdi'],
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headline6,
+                                      ),
+                                    ),
+                                  )),
+                              Expanded(
+                                  flex: 3,
+                                  //width: MediaQuery.of(context).size.width / 4,
+                                  child: Center(
                                     child: Text(
                                       ref.watch(urunListesiProvider)[index]
-                                          ['urunAdi'],
-                                      overflow: TextOverflow.ellipsis,
+                                          ['urunMiktari'],
                                       textAlign: TextAlign.center,
-                                      style:
-                                          Theme.of(context).textTheme.headline6,
                                     ),
+                                  )),
+                              Expanded(
+                                  flex: 3,
+                                  //width: MediaQuery.of(context).size.width / 4,
+                                  child: Center(
+                                    child: Text(
+                                      ref.watch(urunListesiProvider)[index]
+                                          ['urunBirimi'],
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  )),
+                              Expanded(
+                                  flex: 3,
+                                  //width: MediaQuery.of(context).size.width / 4,
+                                  child: Center(
+                                    child: Text(
+                                      ref.watch(urunListesiProvider)[index]
+                                          ['urunKDV'],
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  )),
+                            ],
+                          )
+                        : ref.watch(urunListesiProvider).isNotEmpty
+                            ? Column(
+                                children: [
+                                  const Divider(
+                                    color: Colors.black,
+                                    thickness: 1,
                                   ),
-                                )),
-                            Expanded(
-                                flex: 3,
-                                //width: MediaQuery.of(context).size.width / 4,
-                                child: Center(
-                                  child: Text(
-                                    ref.watch(urunListesiProvider)[index]
-                                        ['urunMiktari'],
-                                    textAlign: TextAlign.center,
-                                  ),
-                                )),
-                            Expanded(
-                                flex: 3,
-                                //width: MediaQuery.of(context).size.width / 4,
-                                child: Center(
-                                  child: Text(
-                                    ref.watch(urunListesiProvider)[index]
-                                        ['urunBirimi'],
-                                    textAlign: TextAlign.center,
-                                  ),
-                                )),
-                            Expanded(
-                                flex: 3,
-                                //width: MediaQuery.of(context).size.width / 4,
-                                child: Center(
-                                  child: Text(
-                                    ref.watch(urunListesiProvider)[index]
-                                        ['urunKDV'],
-                                    textAlign: TextAlign.center,
-                                  ),
-                                )),
-                          ],
-                        )
-                      : ref.watch(urunListesiProvider).isNotEmpty
-                          ? Column(
-                              children: [
-                                const Divider(
-                                  color: Colors.black,
-                                  thickness: 1,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          SizedBox(
-                                              width: MediaQuery.of(context)
-                                                      .size
-                                                      .width /
-                                                  3,
-                                              child: Text(
-                                                LocaleKeys.net_toplam.tr(),
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              )),
-                                          SizedBox(
-                                              width: MediaQuery.of(context)
-                                                      .size
-                                                      .width /
-                                                  4,
-                                              child: Text(
-                                                '£ ${ref.watch(toplamDegerleriProvider)['toplam'] ?? 0}',
-                                                textAlign: TextAlign.end,
-                                              ))
-                                        ],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          SizedBox(
-                                              width: MediaQuery.of(context)
-                                                      .size
-                                                      .width /
-                                                  3,
-                                              child: Text(
-                                                '${LocaleKeys.kdv.tr()} %', //değişen kdv oranlarında burada yazılan da değişmeli, fakat bir faturada birden fazla farklı kdv oranı olursa nasıl olacak...
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              )),
-                                          SizedBox(
-                                              width: MediaQuery.of(context)
-                                                      .size
-                                                      .width /
-                                                  4,
-                                              child: Text(
-                                                '£ ${ref.watch(toplamDegerleriProvider)['kdvToplam'] ?? 0}',
-                                                textAlign: TextAlign.end,
-                                              ))
-                                        ],
-                                      ),
-                                      SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                7 /
-                                                12,
-                                        child: const Divider(
-                                          thickness: 1,
-                                          color: Colors.black,
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            SizedBox(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width /
+                                                    3,
+                                                child: Text(
+                                                  LocaleKeys.net_toplam.tr(),
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                )),
+                                            SizedBox(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width /
+                                                    4,
+                                                child: Text(
+                                                  '£ ${ref.watch(toplamDegerleriProvider)['toplam'] ?? 0}',
+                                                  textAlign: TextAlign.end,
+                                                ))
+                                          ],
                                         ),
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          SizedBox(
-                                              width: MediaQuery.of(context)
-                                                      .size
-                                                      .width /
-                                                  3,
-                                              child: Text(
-                                                LocaleKeys.toplam_tutar.tr(),
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              )),
-                                          SizedBox(
-                                              width: MediaQuery.of(context)
-                                                      .size
-                                                      .width /
-                                                  4,
-                                              child: Text(
-                                                '£ ${ref.watch(toplamDegerleriProvider)['kdvDahilToplam'] ?? 0}',
-                                                textAlign: TextAlign.end,
-                                              ))
-                                        ],
-                                      ),
-                                      SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                7 /
-                                                12,
-                                        child: const Divider(
-                                          thickness: 1,
-                                          color: Colors.grey,
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            SizedBox(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width /
+                                                    3,
+                                                child: Text(
+                                                  '${LocaleKeys.kdv.tr()} %', //değişen kdv oranlarında burada yazılan da değişmeli, fakat bir faturada birden fazla farklı kdv oranı olursa nasıl olacak...
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                )),
+                                            SizedBox(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width /
+                                                    4,
+                                                child: Text(
+                                                  '£ ${ref.watch(toplamDegerleriProvider)['kdvToplam'] ?? 0}',
+                                                  textAlign: TextAlign.end,
+                                                ))
+                                          ],
                                         ),
-                                      )
-                                    ],
-                                  ),
-                                )
-                              ],
-                            )
-                          : const SizedBox();
-                },
+                                        SizedBox(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              7 /
+                                              12,
+                                          child: const Divider(
+                                            thickness: 1,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            SizedBox(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width /
+                                                    3,
+                                                child: Text(
+                                                  LocaleKeys.toplam_tutar.tr(),
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                )),
+                                            SizedBox(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width /
+                                                    4,
+                                                child: Text(
+                                                  '£ ${ref.watch(toplamDegerleriProvider)['kdvDahilToplam'] ?? 0}',
+                                                  textAlign: TextAlign.end,
+                                                ))
+                                          ],
+                                        ),
+                                        SizedBox(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              7 /
+                                              12,
+                                          child: const Divider(
+                                            thickness: 1,
+                                            color: Colors.grey,
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              )
+                            : const SizedBox();
+                  },
+                ),
               ),
-            ),
 
-            const Divider(
-              color: Colors.grey,
-              thickness: 1,
-            ),
-            //ürün girişi fieldlar + floatingactionbutton + kaydet butonu
-            Padding(
-              padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      //FloatingActionButonu...
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: FloatingActionButton(
-                          heroTag: '0',
-                          onPressed: () {
-                            /* TextEditingController urunAdi1 = TextEditingController();
-                      TextEditingController urunMiktari1 =
-                          TextEditingController();
-                      TextEditingController urunBirim1 = TextEditingController();
-                      TextEditingController urunKDV1 = TextEditingController(); */
-                            if (formkey.currentState!.validate()) {
-                              var eklenenUrun = {
-                                'urunAdi': urunAdi.text.trim(),
-                                'urunMiktari': urunMiktari.text.trim(),
-                                'urunBirimi': urunBirimi.text.trim(),
-                                'urunKDV': urunKDV.text.trim()
-                              };
-
-                              ref
-                                  .read(urunListesiProvider.notifier)
-                                  .update((state) => [...state, eklenenUrun]);
-                              ref
-                                  .read(toplamDegerleriProvider.notifier)
-                                  .update((state) => toplamHesapla(ref));
-                              urunAdi.text = '';
-                              urunMiktari.text = '';
-                              urunBirimi.text = '';
-                              urunKDV.text = '';
-                            } /* else {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(
-                                      content: Padding(
-                                padding: EdgeInsets.only(
-                                    bottom: MediaQuery.of(context)
-                                        .viewInsets
-                                        .bottom),
-                                child: Text(
-                                    LocaleKeys.alanlar_bos_birakilamaz.tr()),
-                              )));
-                            } */
-                          },
-                          child: const Icon(Icons.add),
-                        ),
-                      ),
-                      //Ürün girişi textformfieldlar
-                      Expanded(
-                        child: DescriptionWidget(
-                          ref: ref,
-                        ),
-                      )
-                    ],
-                  ),
-                  //En alttaki kaydet butonu
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: SizedBox(
-                        width: MediaQuery.of(context).size.width,
-                        child: ElevatedButton(
+              const Divider(
+                color: Colors.grey,
+                thickness: 1,
+              ),
+              //ürün girişi fieldlar + floatingactionbutton + kaydet butonu
+              Padding(
+                padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        //FloatingActionButonu...
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: FloatingActionButton(
+                            heroTag: '0',
                             onPressed: () {
-                              if (ref.watch(urunListesiProvider).isNotEmpty) {
-                                if (formkey.currentState!.validate()) {
-                                  var eklenenUrun = {
-                                    'urunAdi': urunAdi.text.trim(),
-                                    'urunMiktari': urunMiktari.text.trim(),
-                                    'urunBirimi': urunBirimi.text.trim(),
-                                    'urunKDV': urunKDV.text.trim()
-                                  };
+                              /* TextEditingController urunAdi1 = TextEditingController();
+                        TextEditingController urunMiktari1 =
+                            TextEditingController();
+                        TextEditingController urunBirim1 = TextEditingController();
+                        TextEditingController urunKDV1 = TextEditingController(); */
+                              if (formkey.currentState!.validate()) {
+                                var eklenenUrun = {
+                                  'urunAdi': urunAdi.text.trim(),
+                                  'urunMiktari': urunMiktari.text.trim(),
+                                  'urunBirimi': urunBirimi.text.trim(),
+                                  'urunKDV': urunKDV.text.trim()
+                                };
 
-                                  ref.read(urunListesiProvider.notifier).update(
-                                      (state) => [...state, eklenenUrun]);
-                                  ref
-                                      .read(toplamDegerleriProvider.notifier)
-                                      .update((state) => toplamHesapla(ref));
-                                  urunAdi.text = '';
-                                  urunMiktari.text = '';
-                                  urunBirimi.text = '';
-                                  urunKDV.text = '';
-                                }
-                                faturayiFirebaseYazmakIcinMap(ref);
-                                /* Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const Faturalarim(),
-                                    )); */
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const AciklamaEkle(),
-                                    ));
                                 ref
-                                    .read(radioFaturaProvider.notifier)
-                                    .update((state) => null);
-                                /* Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => FaturaSayfasi(),
-                                    )); */
-                              } else {
+                                    .read(urunListesiProvider.notifier)
+                                    .update((state) => [...state, eklenenUrun]);
+                                ref
+                                    .read(toplamDegerleriProvider.notifier)
+                                    .update((state) => toplamHesapla(ref));
+                                urunAdi.text = '';
+                                urunMiktari.text = '';
+                                urunBirimi.text = '';
+                                urunKDV.text = '';
+                              } /* else {
                                 ScaffoldMessenger.of(context)
                                     .showSnackBar(SnackBar(
                                         content: Padding(
@@ -477,41 +417,128 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
                                       bottom: MediaQuery.of(context)
                                           .viewInsets
                                           .bottom),
-                                  child: Text(LocaleKeys
-                                      .bos_fatura_olusturulamaz_urun_girin
-                                      .tr()),
+                                  child: Text(
+                                      LocaleKeys.alanlar_bos_birakilamaz.tr()),
                                 )));
-                              }
+                              } */
                             },
-                            child: Text(LocaleKeys.kaydet.tr()))),
-                  ),
-                ],
-              ),
-            ),
+                            child: const Icon(Icons.add),
+                          ),
+                        ),
+                        //Ürün girişi textformfieldlar
+                        Expanded(
+                          child: DescriptionWidget(
+                            ref: ref,
+                          ),
+                        )
+                      ],
+                    ),
+                    //En alttaki kaydet butonu
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
+                          width: MediaQuery.of(context).size.width,
+                          child: ElevatedButton(
+                              onPressed: () {
+                                if (ref.watch(urunListesiProvider).isNotEmpty ||
+                                    (ref.watch(urunListesiProvider).isEmpty &&
+                                        formkey.currentState!.validate())) {
+                                  if (formkey.currentState!.validate()) {
+                                    var eklenenUrun = {
+                                      'urunAdi': urunAdi.text.trim(),
+                                      'urunMiktari': urunMiktari.text.trim(),
+                                      'urunBirimi': urunBirimi.text.trim(),
+                                      'urunKDV': urunKDV.text.trim()
+                                    };
 
-            /* Expanded(
-              flex: 2,
-              //height: MediaQuery.of(context).size.height * 0.65,
-              child: Padding(
-                  padding: EdgeInsets.only(
-                      bottom: MediaQuery.of(context).viewInsets.bottom),
-                  child: Column(
-                    children: [
-                      
-                    ],
-                  ) /* ListView.builder(
-                  itemCount:
-                      controllerMapList.isEmpty ? 1 : controllerMapList.length,
-                  itemBuilder: (context, index) {
-                    return controllerMapList.isEmpty
-                        ? Text('Ürün Yok')
-                        : 
-                  },
-                ), */
-                  ),
-            ), */
-          ],
-        ));
+                                    ref
+                                        .read(urunListesiProvider.notifier)
+                                        .update(
+                                            (state) => [...state, eklenenUrun]);
+                                    ref
+                                        .read(toplamDegerleriProvider.notifier)
+                                        .update((state) => toplamHesapla(ref));
+                                    urunAdi.text = '';
+                                    urunMiktari.text = '';
+                                    urunBirimi.text = '';
+                                    urunKDV.text = '';
+                                  }
+                                  faturayiFirebaseYazmakIcinMap(ref);
+                                  /* Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const Faturalarim(),
+                                      )); */
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const FaturaOlusturulduEkrani(),
+                                      ));
+                                  firebasefaturayiYaz()
+                                    ..onError((error, stackTrace) => ref
+                                        .read(
+                                            faturaKaydedildiMiProvider.notifier)
+                                        .update((state) => false))
+                                    ..then((value) {
+                                      ref
+                                          .read(faturaKaydedildiMiProvider
+                                              .notifier)
+                                          .update((state) => true);
+                                    });
+
+                                  ref
+                                      .read(radioFaturaProvider.notifier)
+                                      .update((state) => null);
+                                  /* Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => FaturaSayfasi(),
+                                      )); */
+                                } else {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                          content: Padding(
+                                    padding: EdgeInsets.only(
+                                        bottom: MediaQuery.of(context)
+                                            .viewInsets
+                                            .bottom),
+                                    child: Text(LocaleKeys
+                                        .bos_fatura_olusturulamaz_urun_girin
+                                        .tr()),
+                                  )));
+                                }
+                              },
+                              child: Text(LocaleKeys.kaydet.tr()))),
+                    ),
+                  ],
+                ),
+              ),
+
+              /* Expanded(
+                flex: 2,
+                //height: MediaQuery.of(context).size.height * 0.65,
+                child: Padding(
+                    padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom),
+                    child: Column(
+                      children: [
+                        
+                      ],
+                    ) /* ListView.builder(
+                    itemCount:
+                        controllerMapList.isEmpty ? 1 : controllerMapList.length,
+                    itemBuilder: (context, index) {
+                      return controllerMapList.isEmpty
+                          ? Text('Ürün Yok')
+                          : 
+                    },
+                  ), */
+                    ),
+              ), */
+            ],
+          )),
+    );
   }
 
   Map<String, dynamic> toplamHesapla(WidgetRef ref) {
@@ -573,7 +600,7 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
 
   Future<void> urunleriGetir() async {
     var urunler = await _firestore
-        .collection(_auth.currentUser!.email!)
+        .collection(_auth.currentUser!.displayName!)
         .doc('saticiFirma')
         .collection('urunler')
         .doc('urunler')
@@ -583,9 +610,8 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
           .read(urunlerProvider.notifier)
           .update((state) => ['', LocaleKeys.yeni_urun_ekle.tr()]);
     } else {
-      ref
-          .read(urunlerProvider.notifier)
-          .update((state) => [...urunler.data()!['urunler'], LocaleKeys.yeni_urun_ekle.tr()]);
+      ref.read(urunlerProvider.notifier).update((state) =>
+          [...urunler.data()!['urunler'], LocaleKeys.yeni_urun_ekle.tr()]);
     }
 
     /* var urunler = await _databaseHelper.urunlerigetir();
@@ -601,6 +627,87 @@ class _DescriptionAddPageState extends ConsumerState<DescriptionAddPage> {
             {'urunAdi': 'Yeni Ürün Ekle'}
           ]);
     } */
+  }
+
+  Future<void> firebasefaturayiYaz() async {
+    /* Map<String, dynamic> aciklama = {
+      /* 'aciklama': ref.watch(seciliAciklamaProvider) ==
+              LocaleKeys.bir_aciklama_secin.tr()
+          ? ''
+          : ref.watch(seciliAciklamaProvider), */
+      'aciklama': '',
+      'imza': ref.watch(imzaProvider)
+      //'faturaDocID': ref.watch(faturaDocAdiProvider)
+    }; */
+    Map<String, dynamic> eklenecek = ref.watch(yazilacakFaturaMapProvider)!;
+    //eklenecek.addAll(aciklama);
+    await _firestore
+        .collection(_auth.currentUser!.displayName!)
+        .doc('saticiFirma')
+        .collection('faturalar')
+        .doc(ref.watch(faturaNoProvider))
+        .set(eklenecek);
+/* 
+    await _firestore
+        .collection(ref.watch(saticiAdi))
+        .doc('saticiFirma')
+        .collection('faturalar')
+        .doc(ref.watch(faturaDocAdiProvider))
+        .set(eklenecek, SetOptions(merge: true)); */
+
+    if (ref.watch(yazilacakFaturaNoProvider) != null &&
+        ref.watch(yazilacakFaturaNoProvider)!.containsKey('artanSayi')) {
+      if (ref.watch(yazilacakFaturaNoProvider)!['artanSayi'].toString() ==
+          [1].toString()) {
+        await _firestore
+            .collection(_auth.currentUser!.displayName!)
+            .doc('saticiFirma')
+            .collection('faturaNumaralari')
+            .doc('artanSayi')
+            .set({
+          'artanSayi': ref.watch(yazilacakFaturaNoProvider)!['artanSayi']
+        }, SetOptions(merge: true));
+      } else {
+        await _firestore
+            .collection(_auth.currentUser!.displayName!)
+            .doc('saticiFirma')
+            .collection('faturaNumaralari')
+            .doc('artanSayi')
+            .update({
+          'artanSayi': ref.watch(yazilacakFaturaNoProvider)!['artanSayi']
+        });
+      }
+    } else if (ref.watch(yazilacakFaturaNoProvider) != null &&
+        ref.watch(yazilacakFaturaNoProvider)!.containsKey('tarihSayi')) {
+      if (ref.watch(yazilacakFaturaNoProvider)!['tarihSayi'].toString() ==
+          [1].toString()) {
+        await _firestore
+            .collection(_auth.currentUser!.displayName!)
+            .doc('saticiFirma')
+            .collection('faturaNumaralari')
+            .doc('tarihSayi')
+            .collection(DateFormat('yyyyMMdd')
+                .format(ref.watch(tarihDatetimeProvider)!)
+                .toString())
+            .doc('tarihSayi')
+            .set({
+          'tarihSayi': ref.watch(yazilacakFaturaNoProvider)!['tarihSayi']
+        }, SetOptions(merge: true));
+      } else {
+        await _firestore
+            .collection(_auth.currentUser!.displayName!)
+            .doc('saticiFirma')
+            .collection('faturaNumaralari')
+            .doc('tarihSayi')
+            .collection(DateFormat('yyyyMMdd')
+                .format(ref.watch(tarihDatetimeProvider)!)
+                .toString())
+            .doc('tarihSayi')
+            .update({
+          'tarihSayi': ref.watch(yazilacakFaturaNoProvider)!['tarihSayi']
+        });
+      }
+    }
   }
 }
 
@@ -636,118 +743,164 @@ class _DescriptionWidgetState extends State<DescriptionWidget> {
                 width: MediaQuery.of(context).size.width * 0.35,
                 child: TextFormField(
                   onTap: () {
-                    _showDialog(
-                      CupertinoPicker(
-                        magnification: 1,
-                        squeeze: 1.2,
-                        useMagnifier: true,
-                        itemExtent: _kItemExtent,
-                        onSelectedItemChanged: (int selectedItem) {
-                          setState(() {
-                            _seciliUrun = selectedItem;
-                          });
-                          widget.ref.read(seciliUrunProvider.notifier).update(
-                              (state) => widget.ref
-                                  .watch(urunlerProvider)[selectedItem]);
-                          urunAdi.text = widget.ref.watch(seciliUrunProvider) !=
-                                  null
-                              ? widget.ref.watch(seciliUrunProvider)!
-                              : widget.ref.watch(urunlerProvider)[_seciliUrun];
-                          if (widget.ref.watch(urunlerProvider)[_seciliUrun] ==
-                              LocaleKeys.yeni_urun_ekle.tr()) {
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: Text(LocaleKeys.yeni_urun_ekle.tr()),
-                                content: Form(
-                                    key: yeniUrunFormKey,
-                                    child: TextFormField(
-                                      controller: yeniUrunController,
-                                      decoration: InputDecoration(
-                                          label: Text(LocaleKeys.yeni_urun_adi.tr()),
-                                          border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(20))),
-                                      validator: (value) {
-                                        if (value!.isEmpty) {
-                                          return LocaleKeys.urun_ismi_bos_birakilamaz.tr();
-                                        } else {
-                                          return null;
-                                        }
-                                      },
-                                    )),
-                                actions: [
-                                  TextButton(
-                                      onPressed: () {
-                                        yeniUrunController.clear();
-                                        Navigator.pop(context);
-                                      },
-                                      child: Text(LocaleKeys.vazgec.tr())),
-                                  ElevatedButton(
-                                      onPressed: () async {
-                                        if (yeniUrunFormKey.currentState!
-                                            .validate()) {
-                                          var liste =
-                                              widget.ref.watch(urunlerProvider);
-                                          liste.contains('')
-                                              ? liste.remove('')
-                                              : null;
-                                          liste.contains(LocaleKeys.yeni_urun_ekle.tr())
-                                              ? liste.remove(LocaleKeys.yeni_urun_ekle.tr())
-                                              : null;
+                    setState(() {
+                      _seciliUrun = 0;
+                    });
+                    _showDialog(Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text(LocaleKeys.vazgec.tr())),
+                              ElevatedButton(
+                                  onPressed: () {
+                                    widget.ref
+                                        .read(seciliUrunProvider.notifier)
+                                        .update((state) => widget.ref.watch(
+                                            urunlerProvider)[_seciliUrun]);
+                                    urunAdi.text = widget.ref
+                                                .watch(seciliUrunProvider) !=
+                                            null
+                                        ? widget.ref.watch(seciliUrunProvider)!
+                                        : widget.ref.watch(
+                                            urunlerProvider)[_seciliUrun];
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text(LocaleKeys.tamam.tr()))
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: CupertinoPicker(
+                            magnification: 1,
+                            squeeze: 1.2,
+                            useMagnifier: true,
+                            itemExtent: _kItemExtent,
+                            onSelectedItemChanged: (int selectedItem) {
+                              setState(() {
+                                _seciliUrun = selectedItem;
+                              });
 
-                                          await _firestore
-                                              .collection(
-                                                  _auth.currentUser!.email!)
-                                              .doc('saticiFirma')
-                                              .collection('urunler')
-                                              .doc('urunler')
-                                              .set({
-                                            'urunler': [
-                                              ...liste,
-                                              yeniUrunController.text.trim()
-                                            ]
-                                          }).then((value) async {
-                                            var urunler = await _firestore
-                                                .collection(
-                                                    _auth.currentUser!.email!)
-                                                .doc('saticiFirma')
-                                                .collection('urunler')
-                                                .doc('urunler')
-                                                .get();
-                                            widget.ref
-                                                .read(urunlerProvider.notifier)
-                                                .update((state) => [
-                                                      ...urunler
-                                                          .data()!['urunler'],
-                                                      LocaleKeys.yeni_urun_ekle.tr()
-                                                    ]);
-                                            setState(() {
-                                              _seciliUrun = widget.ref
-                                                      .watch(urunlerProvider)
-                                                      .length -
-                                                  2;
-                                            });
-                                            widget.ref
-                                                .read(
-                                                    seciliUrunProvider.notifier)
-                                                .update((state) => widget.ref
-                                                        .watch(urunlerProvider)[
-                                                    _seciliUrun]);
-                                            urunAdi.text = widget.ref.watch(
-                                                        seciliUrunProvider) !=
-                                                    null
-                                                ? widget.ref
-                                                    .watch(seciliUrunProvider)!
-                                                : widget.ref
-                                                        .watch(urunlerProvider)[
-                                                    _seciliUrun];
-                                            Navigator.pop(context);
-                                            Navigator.pop(context);
+                              if (widget.ref
+                                      .watch(urunlerProvider)[_seciliUrun] ==
+                                  LocaleKeys.yeni_urun_ekle.tr()) {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: Text(LocaleKeys.yeni_urun_ekle.tr()),
+                                    content: Form(
+                                        key: yeniUrunFormKey,
+                                        child: TextFormField(
+                                          controller: yeniUrunController,
+                                          textCapitalization:
+                                              TextCapitalization.words,
+                                          decoration: InputDecoration(
+                                              label: Text(LocaleKeys
+                                                  .yeni_urun_adi
+                                                  .tr()),
+                                              border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          20))),
+                                          validator: (value) {
+                                            if (value!.isEmpty) {
+                                              return LocaleKeys
+                                                  .urun_ismi_bos_birakilamaz
+                                                  .tr();
+                                            } else {
+                                              return null;
+                                            }
+                                          },
+                                        )),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
                                             yeniUrunController.clear();
-                                          });
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text(LocaleKeys.vazgec.tr())),
+                                      ElevatedButton(
+                                          onPressed: () async {
+                                            if (yeniUrunFormKey.currentState!
+                                                .validate()) {
+                                              var liste = widget.ref
+                                                  .watch(urunlerProvider);
+                                              liste.contains('')
+                                                  ? liste.remove('')
+                                                  : null;
+                                              liste.contains(LocaleKeys
+                                                      .yeni_urun_ekle
+                                                      .tr())
+                                                  ? liste.remove(LocaleKeys
+                                                      .yeni_urun_ekle
+                                                      .tr())
+                                                  : null;
 
-                                          /* await _databaseHelper
+                                              await _firestore
+                                                  .collection(_auth.currentUser!
+                                                      .displayName!)
+                                                  .doc('saticiFirma')
+                                                  .collection('urunler')
+                                                  .doc('urunler')
+                                                  .set({
+                                                'urunler': [
+                                                  ...liste,
+                                                  yeniUrunController.text.trim()
+                                                ]
+                                              }).then((value) async {
+                                                var urunler = await _firestore
+                                                    .collection(_auth
+                                                        .currentUser!
+                                                        .displayName!)
+                                                    .doc('saticiFirma')
+                                                    .collection('urunler')
+                                                    .doc('urunler')
+                                                    .get();
+                                                widget.ref
+                                                    .read(urunlerProvider
+                                                        .notifier)
+                                                    .update((state) => [
+                                                          ...urunler.data()![
+                                                              'urunler'],
+                                                          LocaleKeys
+                                                              .yeni_urun_ekle
+                                                              .tr()
+                                                        ]);
+
+                                                setState(() {
+                                                  _seciliUrun = widget.ref
+                                                          .watch(
+                                                              urunlerProvider)
+                                                          .length -
+                                                      2;
+                                                });
+                                                widget.ref
+                                                    .read(seciliUrunProvider
+                                                        .notifier)
+                                                    .update((state) =>
+                                                        widget.ref.watch(
+                                                                urunlerProvider)[
+                                                            _seciliUrun]);
+                                                urunAdi.text = widget.ref.watch(
+                                                            seciliUrunProvider) !=
+                                                        null
+                                                    ? widget.ref.watch(
+                                                        seciliUrunProvider)!
+                                                    : widget.ref.watch(
+                                                            urunlerProvider)[
+                                                        _seciliUrun];
+                                                Navigator.pop(context);
+                                                Navigator.pop(context);
+                                                yeniUrunController.clear();
+                                              });
+
+                                              /* await _databaseHelper
                                               .urunekle(yeniUrunController.text
                                                   .trim())
                                               .then((value) async {
@@ -783,53 +936,59 @@ class _DescriptionWidgetState extends State<DescriptionWidget> {
                                             Navigator.pop(context);
                                             yeniUrunController.clear();
                                           }); */
-                                        }
-                                      },
-                                      child: Text(LocaleKeys.kaydet.tr())),
-                                ],
-                              ),
-                            );
-                          }
-                        },
-                        children: List<Widget>.generate(
-                            widget.ref.watch(urunlerProvider).length,
-                            (int index) {
-                          return Center(
-                            child: index ==
-                                    widget.ref.watch(urunlerProvider).length - 1
-                                ? Center(
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.add),
-                                        Text(
-                                          widget.ref
-                                              .watch(urunlerProvider)[index],
+                                            }
+                                          },
+                                          child: Text(LocaleKeys.kaydet.tr())),
+                                    ],
+                                  ),
+                                );
+                              }
+                            },
+                            children: List<Widget>.generate(
+                                widget.ref.watch(urunlerProvider).length,
+                                (int index) {
+                              return Center(
+                                child: index ==
+                                        widget.ref
+                                                .watch(urunlerProvider)
+                                                .length -
+                                            1
+                                    ? Center(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.add),
+                                            Text(
+                                              widget.ref.watch(
+                                                  urunlerProvider)[index],
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                  )
-                                : SizedBox(
-                                    width: MediaQuery.of(context).size.width,
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 10),
-                                      child: Center(
-                                        child: Text(
-                                          widget.ref
-                                              .watch(urunlerProvider)[index],
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(fontSize: 15),
+                                      )
+                                    : SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10),
+                                          child: Center(
+                                            child: Text(
+                                              widget.ref.watch(
+                                                  urunlerProvider)[index],
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(fontSize: 15),
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ),
-                          );
-                        }),
-                      ),
-                    );
+                              );
+                            }),
+                          ),
+                        )
+                      ],
+                    ));
                   },
                   controller: urunAdi,
                   readOnly: true,
@@ -921,8 +1080,9 @@ class _DescriptionWidgetState extends State<DescriptionWidget> {
   void _showDialog(Widget child) {
     showCupertinoModalPopup<void>(
         context: context,
+        barrierDismissible: true,
         builder: (BuildContext context) => Container(
-              height: 216,
+              height: MediaQuery.of(context).size.height * 0.35,
               padding: const EdgeInsets.only(top: 6.0),
               margin: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,

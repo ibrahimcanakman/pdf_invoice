@@ -111,5 +111,20 @@ abstract class  LocaleKeys {
   static const yeni_urun_ekle = 'yeni_urun_ekle';
   static const yeni_urun_adi = 'yeni_urun_adi';
   static const urun_ismi_bos_birakilamaz = 'urun_ismi_bos_birakilamaz';
+  static const fatura_kaydediliyor = 'fatura_kaydediliyor';
+  static const fatura_kaydi_basarili = 'fatura_kaydi_basarili';
+  static const fatura_kaydi_basarisiz = 'fatura_kaydi_basarisiz';
+  static const baslangic_ve_bitis_tarihi_secin = 'baslangic_ve_bitis_tarihi_secin';
+  static const coklu_fatura_gonder = 'coklu_fatura_gonder';
+  static const hepsini_sec = 'hepsini_sec';
+  static const fatura_sahibi = 'fatura_sahibi';
+  static const gonderilecek_email_girin = 'gonderilecek_email_girin';
+  static const faturalari_gonder = 'faturalari_gonder';
+  static const artan_sayi_5er = 'artan_sayi_5er';
+  static const artan_sayi_3er = 'artan_sayi_3er';
+  static const imza = 'imza';
+  static const bilgilerimi_guncelle = 'bilgilerimi_guncelle';
+  static const email_guncelleme_mesaji = 'email_guncelleme_mesaji';
+  static const onayla = 'onayla';
 
 }

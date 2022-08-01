@@ -58,6 +58,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
         if (user.emailVerified) {
           if (mounted) {
+            auth.currentUser!.displayName == null
+                ? auth.currentUser!.updateDisplayName(auth.currentUser!.email!)
+                : null;
             Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(
@@ -66,6 +69,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 (route) => true);
           }
         } else if (!user.emailVerified) {
+          user.sendEmailVerification();
           showDialog(
               context: context,
               builder: (BuildContext context) {
@@ -235,6 +239,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     SizedBox(height: MediaQuery.of(context).size.height / 50),
                     TextFormField(
                       controller: _saticiAdiController,
+                      textCapitalization: TextCapitalization.words,
                       validator: (value) {
                         if (value!.trim().isEmpty) {
                           return LocaleKeys.bos_birakilamaz.tr();
@@ -251,6 +256,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     TextFormField(
                       maxLines: 4,
                       controller: _saticiAdresiController,
+                      textCapitalization: TextCapitalization.words,
                       validator: (value) {
                         if (value!.trim().isEmpty) {
                           return LocaleKeys.bos_birakilamaz.tr();
@@ -370,6 +376,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (!_kullanici!.emailVerified) {
         await _kullanici.sendEmailVerification();
         bilgileriFirebaseDByeYaz();
+
         Navigator.of(context).pop();
       } else {
         debugPrint('kullanıcının maili onaylanmış ilgili sayfaya gidebilir...');
@@ -434,14 +441,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         } else {
           debugPrint(
               'kullanıcının maili onaylanmış ilgili sayfaya gidebilir...');
-          
-            Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AnaSayfa(),
-                ),
-                (route) => false);
-          
+
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AnaSayfa(),
+              ),
+              (route) => false);
 
           /* Navigator.push(
             context,
@@ -500,28 +506,52 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       'bankaSortCode': _bankaSortCodeController.text.trim(),
       'bankaAccountNumber': _bankaAccountNumberController.text.trim(),
       'yetkiSeviyesi': 1,
-      'firmaLogo':'',
-      'faturaFormati':'Format1'
+      'firmaLogo': '',
+      'faturaFormati': 'Format1',
+      'kullaniciTuru': 'normal'
     };
     //await _databaseHelper.kaydet(_emailKayitController.text);
-    Future(
-      () {
-        _firestore
-            .collection(_emailKayitController.text.trim())
-            .doc('saticiFirma')
-            .set(firmaBilgileri);
-        _firestore
-            .collection(_emailKayitController.text.trim())
-            .doc('saticiFirma')
-            .collection('faturaNoBicim')
-            .doc('faturaNoBicim')
-            .set({'faturaNoBicim': 'Tarih + Sayı'});
-      },
-    ).then((value) {
-      ref
+    await _firestore
+        .collection(_emailKayitController.text.trim())
+        .get()
+        .then((value) async {
+      if (value.docs.isEmpty) {
+        Future(
+          () {
+            _firestore
+                .collection(_emailKayitController.text.trim())
+                .doc('saticiFirma')
+                .set(firmaBilgileri);
+            _firestore
+                .collection(_emailKayitController.text.trim())
+                .doc('saticiFirma')
+                .collection('faturaNoBicim')
+                .doc('faturaNoBicim')
+                .set({'faturaNoBicim': 'Tarih + Sayı'});
+            auth.currentUser!
+                .updateDisplayName(_emailKayitController.text.trim());
+          },
+        ).then((value) {
+          /* ref
           .read(saticiAdi.notifier)
-          .update((state) => _emailKayitController.text.trim());
-      Navigator.pop(context);
+          .update((state) => _emailKayitController.text.trim()); */
+          Navigator.pop(context);
+        });
+      } else {
+        await auth.currentUser!.delete();
+        Navigator.pop(context);
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            content: Text(
+                'Bu e-mail ile daha önce kayıt yapılmış. Lütfen farklı bir e-mail adresi kullanın'),
+            actions: [
+              ElevatedButton(
+                  onPressed: () => Navigator.pop(context), child: Text('Tamam'))
+            ],
+          ),
+        );
+      }
     });
   }
 

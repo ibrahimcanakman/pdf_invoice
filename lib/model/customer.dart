@@ -3,7 +3,7 @@ class Customer {
   final String address;
   final String email;
   final String phone;
-  final String imza;
+  final String? imza;
 
   const Customer({
     required this.name,

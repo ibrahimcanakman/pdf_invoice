@@ -12,8 +12,8 @@ class PdfFatura1 {
   /* final picker = ImagePicker();
   Uint8List? image; */
 
-  Future<List<int>> createPDF(Invoice invoice, String faturaNo, String faturaTarihi,
-      Map<String, dynamic> bankaBilgileri) async {
+  Future<List<int>> createPDF(Invoice invoice, String faturaNo,
+      String faturaTarihi, Map<String, dynamic> bankaBilgileri) async {
     PdfFont font = PdfTrueTypeFont(await _font(), 12);
     PdfFont fontBaslik = PdfTrueTypeFont(await _fontBlack(), 30);
 
@@ -21,14 +21,14 @@ class PdfFatura1 {
     document.pageSettings.size = PdfPageSize.a4;
 
     final page = document.pages.add();
-    
+
     if (invoice.supplier.firmaLogo.isNotEmpty) {
       page.graphics.drawImage(
-        PdfBitmap(await _resim(invoice.supplier.firmaLogo)),
-        Rect.fromLTWH(
-            50, 0, page.getClientSize().width / 4, page.size.height / 9));
+          PdfBitmap(await _resim(invoice.supplier.firmaLogo)),
+          Rect.fromLTWH(
+              50, 0, page.getClientSize().width / 4, page.size.height / 9));
     }
-    
+
     //debugPrint(image!.toList().length.toString());
 
     //büyük harfle INVOICE yazısı yazdırma
@@ -97,14 +97,23 @@ class PdfFatura1 {
     footer.graphics.drawRectangle(
         bounds: Rect.fromLTWH(10, 10, 180, 70), pen: PdfPens.gray);
 
-    footer.graphics.drawImage(PdfBitmap(await _resim(invoice.customer.imza)),
-        Rect.fromLTWH(15, 15, page.getClientSize().width / 3, 60));
+    invoice.customer.imza != null
+        ? footer.graphics.drawImage(
+            PdfBitmap(await _resim(invoice.customer.imza!)),
+            Rect.fromLTWH(15, 15, page.getClientSize().width / 3, 60))
+        : null;
     //var a = await _resim();
     //debugPrint(a.length.toString());
+    String bankaBilgisi =
+        '\nAccount Name__: ${bankaBilgileri['accountName']}\nSort Code_______: ${bankaBilgileri['sortCode']}\nAccount Number: ${bankaBilgileri['accountNumber']}';
+    final Size textSize = font.measureString(bankaBilgisi);
     footer.graphics.drawString(
         bounds: Rect.fromLTWH(
-            page.size.width / 2, 0, page.getClientSize().width, 80),
-        '\nAccount Name__: ${bankaBilgileri['accountName']}\nSort Code_______: ${bankaBilgileri['sortCode']}\nAccount Number: ${bankaBilgileri['accountNumber']}',
+            page.getClientSize().width - (15 + textSize.width),
+            0,
+            page.getClientSize().width,
+            80),
+        bankaBilgisi,
         font);
     document.template.bottom = footer;
 

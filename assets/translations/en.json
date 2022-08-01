@@ -108,5 +108,20 @@
   "musteri_imzasi": "Customer Signature",
   "yeni_urun_ekle": "Add New Product",
   "yeni_urun_adi": "New Product Name",
-  "urun_ismi_bos_birakilamaz": "The product name cannot be left blank."
+  "urun_ismi_bos_birakilamaz": "The product name cannot be left blank.",
+  "fatura_kaydediliyor": "Saving Invoice...",
+  "fatura_kaydi_basarili": "Invoice Registration Successful...",
+  "fatura_kaydi_basarisiz": "Invoice Registration Failed...",
+  "baslangic_ve_bitis_tarihi_secin": "Select Start and End Date",
+  "coklu_fatura_gonder": "Send Multiple Invoices",
+  "hepsini_sec": "Select All",
+  "fatura_sahibi": "Invoice Holder",
+  "gonderilecek_email_girin": "Enter Email to Send...",
+  "faturalari_gonder": "Send Invoices",
+  "artan_sayi_5er": "Increasing Number by 5",
+  "artan_sayi_3er": "Increasing Number by 3",
+  "imza": "Signature",
+  "bilgilerimi_guncelle": "Update My Information",
+  "email_guncelleme_mesaji": "Verification is required before your information can be updated. Please enter your password. In order to log in to the application after the e-mail change, the account must be verified via the new e-mail. Therefore, after this update, you will see an e-mail verification message on the first login to the application. You must use the link in the e-mail sent for verification. Otherwise, you may not be able to login to the application.",
+  "onayla": "Approve"
 }

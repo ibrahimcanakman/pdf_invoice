@@ -23,7 +23,7 @@ class _AliciSecState extends ConsumerState<AliciSec> {
   @override
   void initState() {
     super.initState();
-    aliciListesiniGetir();
+    //aliciListesiniGetir();
   }
 
   @override
@@ -92,15 +92,22 @@ class _AliciSecState extends ConsumerState<AliciSec> {
                                 },
                               ),
                               ElevatedButton(
-                                  onPressed: () {
-                                    aliciSil(ref);
-                                    var liste = ref.watch(aliciListesiProvider);
+                                  onPressed: () async {
+                                    //aliciSil(ref);
+                                    await _firestore
+                                        .collection(
+                                            auth.currentUser!.displayName!)
+                                        .doc(ref.watch(
+                                                aliciSecSeciliMusteriProvider)![
+                                            'adi'])
+                                        .delete();
+                                    /* var liste = ref.watch(aliciListesiProvider);
                                     liste.remove(ref
                                         .watch(aliciSecSeciliMusteriProvider));
                                     ref
                                         .read(aliciListesiProvider.notifier)
                                         .update((state) => liste);
-                                    setState(() {});
+                                    setState(() {}); */
                                     Navigator.of(context).pop();
                                   },
                                   child: Text(LocaleKeys.sil.tr()))
@@ -167,7 +174,95 @@ class _AliciSecState extends ConsumerState<AliciSec> {
                   ),
                   Expanded(
                     flex: 6,
-                    child: ListView.builder(
+                    child: StreamBuilder(
+                        stream: _firestore
+                            .collection(auth.currentUser!.displayName!)
+                            .snapshots(),
+                        builder: (
+                          BuildContext context,
+                          AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
+                              snapshot,
+                        ) {
+                          if (snapshot.hasData) {
+                            final List<
+                                    QueryDocumentSnapshot<Map<String, dynamic>>>
+                                _alicilar = snapshot.data!.docs;
+                            List<Map<String, dynamic>> aliciListesi = [];
+
+                            for (var item in _alicilar) {
+                              item.id == 'saticiFirma'
+                                  ? null
+                                  : aliciListesi.add(item.data());
+                            }
+                            return ListView.builder(
+                              itemCount: aliciListesi.length,
+                              itemBuilder: (context, index) {
+                                return Column(
+                                  children: [
+                                    ListTile(
+                                      onTap: () {
+                                        ref
+                                            .read(radioAliciProvider.notifier)
+                                            .update((state) => index);
+                                        ref
+                                            .read(gecerliMusteri.notifier)
+                                            .update((state) {
+                                          return aliciListesi[index];
+                                        });
+                                        ref
+                                            .read(aliciSecSeciliMusteriProvider
+                                                .notifier)
+                                            .update(
+                                                (state) => aliciListesi[index]);
+                                      },
+                                      leading: Radio(
+                                        value: index,
+                                        groupValue:
+                                            ref.watch(radioAliciProvider),
+                                        onChanged: (int? yeniDeger) {
+                                          ref
+                                              .read(radioAliciProvider.notifier)
+                                              .update((state) => index);
+                                          ref
+                                              .read(gecerliMusteri.notifier)
+                                              .update((state) {
+                                            return aliciListesi[index];
+                                          });
+                                          ref
+                                              .read(
+                                                  aliciSecSeciliMusteriProvider
+                                                      .notifier)
+                                              .update((state) =>
+                                                  aliciListesi[index]);
+                                          /* ref
+                                      .read(seciliFaturaProvider.notifier)
+                                      .update((state) => ref
+                                          .watch(faturalarProvider)[index]
+                                          .data()); */
+                                        },
+                                      ),
+                                      title: Text(aliciListesi[index]['adi']),
+                                    ),
+                                    const Divider(
+                                      height: 0,
+                                      thickness: 2,
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          } else {
+                            return const Center(
+                              child: SizedBox(
+                                height: 40,
+                                width: 40,
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          }
+                        }),
+
+                    /* ListView.builder(
                       itemCount: ref.watch(aliciListesiProvider).length,
                       itemBuilder: (context, index) {
                         return Column(
@@ -223,7 +318,7 @@ class _AliciSecState extends ConsumerState<AliciSec> {
                           ],
                         );
                       },
-                    ),
+                    ), */
                   ),
                   Visibility(
                     visible: ref.watch(radioAliciProvider) != null,
@@ -264,14 +359,11 @@ class _AliciSecState extends ConsumerState<AliciSec> {
     );
   }
 
-  void aliciSil(WidgetRef ref) async {
-    await _firestore
-        .collection(ref.watch(saticiAdi))
-        .doc(ref.watch(aliciSecSeciliMusteriProvider)!['adi'])
-        .delete();
-  }
+  /* void aliciSil(WidgetRef ref) async {
+    
+  } */
 
-  void aliciListesiniGetir() async {
+  /* void aliciListesiniGetir() async {
     var gelenBilgi =
         await _firestore.collection(auth.currentUser!.email!).get();
 
@@ -285,5 +377,5 @@ class _AliciSecState extends ConsumerState<AliciSec> {
       }
       ref.read(aliciListesiProvider.notifier).update((state) => aliciListesi);
     }
-  }
+  } */
 }

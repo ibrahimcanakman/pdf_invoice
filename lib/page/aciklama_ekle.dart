@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+/* import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -23,19 +23,18 @@ class AciklamaEkle extends ConsumerStatefulWidget {
 
 class _AciklamaEkleState extends ConsumerState<AciklamaEkle> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  int _selectedFruit = 0;
+  //final FirebaseAuth _auth = FirebaseAuth.instance;
+  //int _selectedFruit = 0;
 
-  
-  TextEditingController _yeniAciklamaController = TextEditingController();
+  final TextEditingController _yeniAciklamaController = TextEditingController();
   //TextEditingController _aciklamaController = TextEditingController();
   final GlobalKey<SfSignaturePadState> signatureGlobalKey = GlobalKey();
 
-  @override
+  /* @override
   void initState() {
     super.initState();
     //aciklamalariGetir();
-  }
+  } */
 
   @override
   Widget build(BuildContext context) {
@@ -267,7 +266,7 @@ class _AciklamaEkleState extends ConsumerState<AciklamaEkle> {
                       ),
                     ),
                      */
-              Expanded(
+              /* Expanded(
                 flex: 3,
                 child: Center(
                   child: Column(
@@ -291,7 +290,7 @@ class _AciklamaEkleState extends ConsumerState<AciklamaEkle> {
                     ],
                   ),
                 ),
-              ),
+              ), */
               Expanded(
                 flex: 5,
                 child: Column(
@@ -345,6 +344,9 @@ class _AciklamaEkleState extends ConsumerState<AciklamaEkle> {
                                     .read(seciliAciklamaProvider.notifier)
                                     .update((state) =>
                                         LocaleKeys.bir_aciklama_secin.tr());
+                                ref
+                                    .read(tarihDatetimeProvider.notifier)
+                                    .update((state) => null);
                               });
                             });
                           },
@@ -404,83 +406,6 @@ class _AciklamaEkleState extends ConsumerState<AciklamaEkle> {
     await _databaseHelper.aciklamaekle(_yeniAciklamaController.text.trim());
   } */
 
-  Future<void> firebasefaturayiYaz() async {
-    Map<String, dynamic> aciklama = {
-      /* 'aciklama': ref.watch(seciliAciklamaProvider) ==
-              LocaleKeys.bir_aciklama_secin.tr()
-          ? ''
-          : ref.watch(seciliAciklamaProvider), */
-      'aciklama': _yeniAciklamaController.text.trim(),
-      'imza': ref.watch(imzaProvider)
-      //'faturaDocID': ref.watch(faturaDocAdiProvider)
-    };
-    Map<String, dynamic> eklenecek = ref.watch(yazilacakFaturaMapProvider)!;
-    eklenecek.addAll(aciklama);
-    await _firestore
-        .collection(ref.watch(saticiAdi))
-        .doc('saticiFirma')
-        .collection('faturalar')
-        .doc(ref.watch(faturaNoProvider))
-        .set(eklenecek);
-/* 
-    await _firestore
-        .collection(ref.watch(saticiAdi))
-        .doc('saticiFirma')
-        .collection('faturalar')
-        .doc(ref.watch(faturaDocAdiProvider))
-        .set(eklenecek, SetOptions(merge: true)); */
-
-    if (ref.watch(yazilacakFaturaNoProvider) != null &&
-        ref.watch(yazilacakFaturaNoProvider)!.containsKey('artanSayi')) {
-      if (ref.watch(yazilacakFaturaNoProvider)!['artanSayi'].toString() ==
-          [0].toString()) {
-        await _firestore
-            .collection(ref.watch(saticiAdi))
-            .doc('saticiFirma')
-            .collection('faturaNumaralari')
-            .doc('artanSayi')
-            .set({
-          'artanSayi': ref.watch(yazilacakFaturaNoProvider)!['artanSayi']
-        }, SetOptions(merge: true));
-      } else {
-        await _firestore
-            .collection(ref.watch(saticiAdi))
-            .doc('saticiFirma')
-            .collection('faturaNumaralari')
-            .doc('artanSayi')
-            .update({
-          'artanSayi': ref.watch(yazilacakFaturaNoProvider)!['artanSayi']
-        });
-      }
-    } else {
-      if (ref.watch(yazilacakFaturaNoProvider)!['tarihSayi'].toString() ==
-          [0].toString()) {
-        await _firestore
-            .collection(ref.watch(saticiAdi))
-            .doc('saticiFirma')
-            .collection('faturaNumaralari')
-            .doc('tarihSayi')
-            .collection(DateFormat('yyyyMMdd')
-                .format(ref.watch(tarihDatetimeProvider))
-                .toString())
-            .doc('tarihSayi')
-            .set({
-          'tarihSayi': ref.watch(yazilacakFaturaNoProvider)!['tarihSayi']
-        }, SetOptions(merge: true));
-      } else {
-        await _firestore
-            .collection(ref.watch(saticiAdi))
-            .doc('saticiFirma')
-            .collection('faturaNumaralari')
-            .doc('tarihSayi')
-            .collection(DateFormat('yyyyMMdd')
-                .format(ref.watch(tarihDatetimeProvider))
-                .toString())
-            .doc('tarihSayi')
-            .update({
-          'tarihSayi': ref.watch(yazilacakFaturaNoProvider)!['tarihSayi']
-        });
-      }
-    }
-  }
+  
 }
+ */

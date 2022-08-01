@@ -108,5 +108,20 @@
   "musteri_imzasi": "Müşteri İmzası",
   "yeni_urun_ekle": "Yeni Ürün Ekle",
   "yeni_urun_adi": "Yeni Ürün Adı",
-  "urun_ismi_bos_birakilamaz": "Ürün ismi boş bırakılamaz."
+  "urun_ismi_bos_birakilamaz": "Ürün ismi boş bırakılamaz.",
+  "fatura_kaydediliyor": "Fatura Kaydediliyor...",
+  "fatura_kaydi_basarili": "Fatura Kaydı Başarılı...",
+  "fatura_kaydi_basarisiz": "Fatura Kaydı Başarısız...",
+  "baslangic_ve_bitis_tarihi_secin": "Başlangıç ve Bitiş Tarihi Seçin",
+  "coklu_fatura_gonder": "Çoklu Fatura Gönder",
+  "hepsini_sec": "Hepsini Seç",
+  "fatura_sahibi": "Fatura Sahibi",
+  "gonderilecek_email_girin": "Gönderilecek E-Mail Girin...",
+  "faturalari_gonder": "Faturaları Gönder",
+  "artan_sayi_5er": "Artan Sayı 5'er",
+  "artan_sayi_3er": "Artan Sayı 3'er",
+  "imza": "İmza",
+  "bilgilerimi_guncelle": "Bilgilerimi Güncelle",
+  "email_guncelleme_mesaji": "Bilgilerinizin güncellenebilmesi için doğrulama gerekli. Lütfen şifrenizi girin. E-mail değişiminden sonra uygulamaya giriş yapabilmek için hesabın yeni e-mail üzerinden doğrulanması gerekli. Bu yüzden, bu güncellemeden sonra uygulamaya ilk girişte e-mail doğrulama mesajı göreceksiniz. Doğrulama için gönderilen e-mail içindeki linki kullanmalısınız. Aksi taktirde uygulamaya giriş yapamayabilirsiniz.",
+  "onayla": "Onayla"
 }
